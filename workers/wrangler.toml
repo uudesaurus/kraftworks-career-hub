@@ -1,0 +1,43 @@
+name = "kraftworks-api"
+main = "src/index.ts"
+compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+ENVIRONMENT = "production"
+# Set to "true" to enable sandbox mode (mock AI, emails, auth bypass)
+SANDBOX_MODE = "false"
+
+# Secrets (set via `wrangler secret put`):
+# CLERK_SECRET_KEY
+# CLERK_WEBHOOK_SECRET
+# OPENROUTER_API_KEY
+# RESEND_API_KEY
+# ADMIN_EMAIL
+
+[[d1_databases]]
+binding = "DB"
+database_name = "kraftworks-db"
+database_id = "324d159e-a465-4ff3-8fca-b0a7c1e6344c"
+
+# Uncomment when R2 is enabled on your Cloudflare account
+[[r2_buckets]]
+binding = "RESUMES_BUCKET"
+bucket_name = "kraftworks-resumes"
+
+# Uncomment when using Cloudflare Workflows (requires beta access)
+# [[workflows]]
+# name = "generate-resume-feedback"
+# binding = "RESUME_FEEDBACK_WORKFLOW"
+# class_name = "ResumeFeedbackWorkflow"
+#
+# [[workflows]]
+# name = "generate-questions"
+# binding = "INTERVIEW_QUESTIONS_WORKFLOW"
+# class_name = "InterviewQuestionsWorkflow"
+
+# Custom domain route (uncomment when you have a custom domain)
+# [triggers]
+# routes = [
+#   { pattern = "api.kraftworks.com/*", zone_name = "kraftworks.com" }
+# ]
