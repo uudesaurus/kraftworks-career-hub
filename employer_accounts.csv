@@ -1,0 +1,4 @@
+Company Name,Contact Email,Suggested Password,SQL Placeholder ID,Role,Notes
+Enterprise Electrical,hr@enterpriseelectrical.com,EE_Kraft2026!,CLERK_ID_ENTERPRISE_ELECTRICAL,employer,"Create in Clerk dashboard. After creation copy the Clerk user ID (e.g. user_2abc...) and find-replace the placeholder in production_seed.sql"
+Unify Energy Solutions,careers@unifyenergy.com,UES_Kraft2026!,CLERK_ID_UNIFY_ENERGY,employer,"Create in Clerk dashboard. After creation copy the Clerk user ID and find-replace the placeholder in production_seed.sql"
+Hays Electrical Services,hr@hayselectrical.com,Hays_Kraft2026!,CLERK_ID_HAYS_ELECTRICAL,employer,"Create in Clerk dashboard. After creation copy the Clerk user ID and find-replace the placeholder in production_seed.sql"

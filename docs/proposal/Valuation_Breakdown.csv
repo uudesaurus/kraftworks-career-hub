@@ -1,0 +1,72 @@
+Section,Item,Story Points,Hours per SP,Total Hours,Rate (USD/hr),Amount (USD),Exchange Rate (IDR/USD),Amount (IDR),Notes
+,,,,,,,,,"This sheet shows the full valuation methodology: how story points convert to hours, hours to USD, and USD to IDR."
+,,,,,,,,,"Rate: $30 USD/hour | 0.5 hours per story point (30 min avg) | Exchange: Rp 16,300 per $1 USD"
+,,,,,,,,,
+METHODOLOGY,,,,,,,,,
+,Story Point Definition,1,0.5,0.5,$30.00,$15.00,"Rp 16,300","Rp 244,500","1 SP = ~30 minutes of senior engineer work (design + code + local test)"
+,Daily Capacity (4 hrs/day),—,—,4,$30.00,$120.00,"Rp 16,300","Rp 1,956,000","4 focused hours/day = 8 SP/day throughput"
+,Weekly Capacity (5 days),—,—,20,$30.00,$600.00,"Rp 16,300","Rp 9,780,000","1 week = 5 working days × 4 hours"
+,,,,,,,,,
+EPIC BREAKDOWN,,,,,,,,,
+Epic 1: Infrastructure Setup,CREATE D1 Database Schema,2,0.5,1.0,$30.00,$30.00,"Rp 16,300","Rp 489,000","12 tables, indexes, constraints, migrations"
+Epic 1: Infrastructure Setup,CONFIGURE R2 Storage Bucket,1,0.5,0.5,$30.00,$15.00,"Rp 16,300","Rp 244,500","Private bucket, CORS, Worker binding"
+Epic 1: Infrastructure Setup,CONFIGURE Worker Project & Environment,1,0.5,0.5,$30.00,$15.00,"Rp 16,300","Rp 244,500","wrangler.toml, secrets, dev environment"
+,Epic 1 Subtotal,4,0.5,2.0,$30.00,$60.00,"Rp 16,300","Rp 978,000",
+,,,,,,,,,
+Epic 2: Auth & Authorization,SETUP Clerk Frontend Auth (FE),3,0.5,1.5,$30.00,$45.00,"Rp 16,300","Rp 733,500","ClerkProvider, pre-built components, hooks"
+Epic 2: Auth & Authorization,CREATE Clerk Webhook User Sync (BE),2,0.5,1.0,$30.00,$30.00,"Rp 16,300","Rp 489,000","Webhook receiver, SVIX verify, D1 upsert"
+Epic 2: Auth & Authorization,CREATE JWT Verification Middleware (BE),2,0.5,1.0,$30.00,$30.00,"Rp 16,300","Rp 489,000","JWKS caching, token validation, context injection"
+Epic 2: Auth & Authorization,CREATE Admin Role Gate Middleware (BE),1,0.5,0.5,$30.00,$15.00,"Rp 16,300","Rp 244,500","user_roles query, 403 handling"
+Epic 2: Auth & Authorization,Integration Testing,3,0.5,1.5,$30.00,$45.00,"Rp 16,300","Rp 733,500","Auth flow E2E: signup → sync → JWT → protected routes"
+,Epic 2 Subtotal,11,0.5,5.5,$30.00,$165.00,"Rp 16,300","Rp 2,689,500",
+,,,,,,,,,
+Epic 3: Resume Management,CREATE Resume Upload,3,0.5,1.5,$30.00,$45.00,"Rp 16,300","Rp 733,500","FE form + BE Worker + R2 upload + D1 insert"
+Epic 3: Resume Management,READ Resume Details,2,0.5,1.0,$30.00,$30.00,"Rp 16,300","Rp 489,000","User-scoped query, status badge"
+Epic 3: Resume Management,DELETE Resume,2,0.5,1.0,$30.00,$30.00,"Rp 16,300","Rp 489,000","R2 delete + D1 soft-delete"
+,Epic 3 Subtotal,7,0.5,3.5,$30.00,$105.00,"Rp 16,300","Rp 1,711,500",
+,,,,,,,,,
+Epic 4: AI Resume Feedback,CREATE Resume Feedback Request,6,0.5,3.0,$30.00,$90.00,"Rp 16,300","Rp 1,467,000","6-step Workflow: Validate → Enrich → OpenRouter → Normalize → Persist → Notify"
+Epic 4: AI Resume Feedback,READ Resume Feedback,2,0.5,1.0,$30.00,$30.00,"Rp 16,300","Rp 489,000","Approved-only view, pending state"
+Epic 4: AI Resume Feedback,UPDATE Resume Feedback (Admin Review),3,0.5,1.5,$30.00,$45.00,"Rp 16,300","Rp 733,500","Approve/reject/edit + audit log"
+,Epic 4 Subtotal,11,0.5,5.5,$30.00,$165.00,"Rp 16,300","Rp 2,689,500",
+,,,,,,,,,
+Epic 5: AI Interview Prep,CREATE Interview Questions,4,0.5,2.0,$30.00,$60.00,"Rp 16,300","Rp 978,000","Workflow: Validate → Enrich → OpenRouter → Persist"
+Epic 5: AI Interview Prep,READ Interview Questions History,2,0.5,1.0,$30.00,$30.00,"Rp 16,300","Rp 489,000","Latest question set, 3 categories"
+,Epic 5 Subtotal,6,0.5,3.0,$30.00,$90.00,"Rp 16,300","Rp 1,467,000",
+,,,,,,,,,
+Epic 6: Admin Panel,READ All Resume Feedback (Admin),3,0.5,1.5,$30.00,$45.00,"Rp 16,300","Rp 733,500","List, search, filter, sort"
+Epic 6: Admin Panel,READ Waitlist Entries (Admin),3,0.5,1.5,$30.00,$45.00,"Rp 16,300","Rp 733,500","Trade grad + employer tabs"
+Epic 6: Admin Panel,EXPORT Data to CSV,3,0.5,1.5,$30.00,$45.00,"Rp 16,300","Rp 733,500","3 export targets, timestamped filenames"
+Epic 6: Admin Panel,READ Admin Audit Log,2,0.5,1.0,$30.00,$30.00,"Rp 16,300","Rp 489,000","Chronological log, action filter"
+,Epic 6 Subtotal,11,0.5,5.5,$30.00,$165.00,"Rp 16,300","Rp 2,689,500",
+,,,,,,,,,
+Epic 7: Waitlist & Contact,CREATE Trade Grad Waitlist Entry,2,0.5,1.0,$30.00,$30.00,"Rp 16,300","Rp 489,000","Public form → D1 + Resend confirmation"
+Epic 7: Waitlist & Contact,CREATE Employer Waitlist Entry,2,0.5,1.0,$30.00,$30.00,"Rp 16,300","Rp 489,000","Public form → D1 + Resend confirmation"
+Epic 7: Waitlist & Contact,CREATE Contact Submission,2,0.5,1.0,$30.00,$30.00,"Rp 16,300","Rp 489,000","Contact form → D1 + admin email"
+,Epic 7 Subtotal,6,0.5,3.0,$30.00,$90.00,"Rp 16,300","Rp 1,467,000",
+,,,,,,,,,
+Epic 8: Email System,SETUP Resend Integration,3,0.5,1.5,$30.00,$45.00,"Rp 16,300","Rp 733,500","API key, domain verification, helper function"
+Epic 8: Email System,CREATE Email Templates,2,0.5,1.0,$30.00,$30.00,"Rp 16,300","Rp 489,000","3 templates: admin notify, waitlist confirm, contact ack"
+,Epic 8 Subtotal,5,0.5,2.5,$30.00,$75.00,"Rp 16,300","Rp 1,222,500",
+,,,,,,,,,
+Epic 9: User Dashboard,READ Dashboard Overview,3,0.5,1.5,$30.00,$45.00,"Rp 16,300","Rp 733,500","Resume card + AI usage card + interview prep card"
+Epic 9: User Dashboard,READ AI Usage Status,2,0.5,1.0,$30.00,$30.00,"Rp 16,300","Rp 489,000","Remaining actions display, real-time update"
+,Epic 9 Subtotal,5,0.5,2.5,$30.00,$75.00,"Rp 16,300","Rp 1,222,500",
+,,,,,,,,,
+SUMMARY,,,,,,,,,
+,Total All Epics (FE + BE + INT),66,0.5,33.0,$30.00,$990.00,"Rp 16,300","Rp 16,137,000","Full scope if all tracks billed"
+,,,,,,,,,
+BILLED SCOPE (Backend Only),,,,,,,,,
+,Backend Story Points Only,40,0.5,20.0,$30.00,$600.00,"Rp 16,300","Rp 9,780,000","5 working days × 4 hours/day"
+,Frontend (EXCLUDED — strikethrough),25,0.5,12.5,$30.00,$375.00,"Rp 16,300","Rp 6,112,500","Not billed"
+,Integration Testing (EXCLUDED — strikethrough),22,0.5,11.0,$30.00,$330.00,"Rp 16,300","Rp 5,379,000","Not billed"
+,PM Deliverables (EXCLUDED — provided free),—,—,—,—,—,—,—,"PRD, ERD, UX Flow, Architecture Design — already delivered"
+,,,,,,,,,
+FINAL QUOTATION,,,,,,,,,
+,Billed: Backend Development,40,0.5,20.0,$30.00,$600.00,"Rp 16,300","Rp 9,780,000",
+,PM Fee (EXCLUDED),—,—,—,—,—,—,"Rp 0","20% waived — PM deliverables provided at no charge"
+,GRAND TOTAL,40,0.5,20.0,$30.00,$600.00,"Rp 16,300","Rp 9,780,000","This is the amount on the Quotation"
+,,,,,,,,,
+PAYMENT TERMS,,,,,,,,,
+,Term 1 — Down Payment (50%),—,—,—,—,—,—,"Rp 4,890,000","Due upon project kickoff"
+,Term 2 — Final Delivery (50%),—,—,—,—,—,—,"Rp 4,890,000","Due upon UAT sign-off / handover"

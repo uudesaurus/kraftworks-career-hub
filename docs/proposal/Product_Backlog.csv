@@ -1,0 +1,99 @@
+ID,Epic,Backlog Name,Role,User Story,Acceptance Criteria,FE,BE,INT,Total,Status,Sprint,Notes
+1,Infrastructure Setup,CREATE D1 Database Schema,Engineer,"As an Engineer, I want to create the complete D1 database schema so that all backend services have a properly structured, migration-versioned data layer aligned with the ERD.","AC1: All 12 tables created in D1 (users, user_roles, resumes, resume_feedback, interview_questions, ai_usage, trade_grad_waitlist, employer_waitlist, contact_submissions, admin_audit_log, email_events, workflow_runs)
+AC2: All foreign keys, CHECK constraints, and recommended indexes applied per ERD specification
+AC3: Migration file versioned and idempotent (re-runnable without error)",0,2,0,2,Not Started,,
+2,Infrastructure Setup,CONFIGURE R2 Storage Bucket,Engineer,"As an Engineer, I want to configure the R2 storage bucket so that resume PDFs can be stored with user-scoped paths and proper access controls.","AC1: R2 bucket created with private-by-default access policy
+AC2: CORS policy configured for the frontend domain
+AC3: Worker binding configured for direct R2 access without network hops",0,1,0,1,Not Started,,
+3,Infrastructure Setup,CONFIGURE Worker Project & Environment,Engineer,"As an Engineer, I want the Worker project scaffolded with all bindings and environment secrets so that services deploy consistently across dev and production.","AC1: wrangler.toml configured with D1, R2, and environment bindings
+AC2: Secrets set — Clerk keys, OpenRouter API key, Resend API key
+AC3: Local dev environment functional with wrangler dev",0,1,0,1,Not Started,,
+4,Authentication & Authorization,SETUP Clerk Frontend Auth,User,"As a User, I want to sign up and sign in using Clerk's authentication components so that I have a secure, modern authentication experience replacing the current Supabase Auth forms.","AC1: ClerkProvider wraps the React application with correct publishable key
+AC2: Sign-in and Sign-up pages render Clerk pre-built components
+AC3: Session state accessible via Clerk's useAuth() / useUser() hooks
+AC4: ProtectedRoute component updated to use Clerk session check",3,0,1,4,Not Started,,
+5,Authentication & Authorization,CREATE Clerk Webhook User Sync,System,"As the System, I want to receive Clerk webhook events so that user records are automatically synced to D1 on every signup, profile update, and deletion.","AC1: Worker endpoint receives user.created webhook and inserts into users table
+AC2: Worker receives user.updated webhook and updates users record
+AC3: Webhook signature verified using Clerk's SVIX library
+AC4: If role mapping exists in Clerk metadata, user_roles is upserted",0,2,1,3,Not Started,,
+6,Authentication & Authorization,CREATE JWT Verification Middleware,System,"As the System, I want all authenticated Worker endpoints to verify Clerk JWTs so that only valid, non-expired sessions can access protected resources.","AC1: JWT signature verified against Clerk JWKS endpoint (cached at edge)
+AC2: Token expiry validated; expired tokens return 401
+AC3: User ID extracted from JWT claims and injected into request context
+AC4: Invalid or missing tokens return 401 with descriptive error",0,2,0,2,Not Started,,
+7,Authentication & Authorization,CREATE Admin Role Gate Middleware,Admin,"As an Admin, I want role-based access control enforced at the Worker level so that only users with the admin role can access admin-only endpoints.","AC1: Middleware queries user_roles table for the authenticated user
+AC2: Non-admin users receive 403 Forbidden
+AC3: Admin check reusable across all admin Worker routes",0,1,1,2,Not Started,,
+8,Resume Management,CREATE Resume Upload,User,"As a User, I want to upload my resume as a PDF so that I can receive AI-powered feedback and use it for interview prep.","AC1: File validation — PDF only, max 5 MB
+AC2: PDF stored in R2 under user-scoped path ({user_id}/resume.pdf)
+AC3: SHA-256 hash computed server-side for deduplication
+AC4: Metadata record created in D1 resumes table
+AC5: Previous active resume set to is_active = 0
+AC6: Frontend re-wired from Supabase Storage to Worker upload endpoint",2,2,1,3,Not Started,,
+9,Resume Management,READ Resume Details,User,"As a User, I want to see my uploaded resume details so that I know what file is currently active and its feedback status.","AC1: Display file name, upload date, file size
+AC2: Show feedback status badge (Uploaded / Pending Review / Feedback Ready)
+AC3: Scoped by authenticated user's ID",1,1,1,2,Not Started,,
+10,Resume Management,DELETE Resume,User,"As a User, I want to delete my resume so that I can remove outdated files and upload a new version.","AC1: R2 object deleted on confirmed removal
+AC2: D1 record soft-deleted (deactivated) to preserve audit trail
+AC3: Associated feedback records display 'Resume removed' state",1,1,1,2,Not Started,,
+11,AI Resume Feedback Pipeline,CREATE Resume Feedback Request,User,"As a User, I want to generate AI-powered resume feedback so that I receive a scored evaluation with strengths, improvements, and trade-specific suggestions.","AC1: Quota check — reject if user has used >= 3 AI actions
+AC2: Deduplication check — reject if same resume hash already processed
+AC3: Cloudflare Workflow orchestrates 6 durable steps: Validate > Enrich > AI Inference > Normalize > Persist > Notify
+AC4: OpenRouter call uses structured tool-call schema forcing JSON output
+AC5: Feedback saved to resume_feedback with status = pending_review
+AC6: AI usage record created in same D1 transaction
+AC7: Workflow retries individual failed steps (max 3, exponential backoff)",1,4,2,6,Not Started,,
+12,AI Resume Feedback Pipeline,READ Resume Feedback,User,"As a User, I want to see my resume feedback once an admin has approved it so that I can act on the evaluation.","AC1: Feedback visible only when status = approved
+AC2: Display overall score (1-10), strengths, improvements, suggestions, trade-specific suggestions, actionable steps
+AC3: Show 'Pending Review' state when status = pending_review",1,1,1,2,Not Started,,
+13,AI Resume Feedback Pipeline,UPDATE Resume Feedback (Admin Review),Admin,"As an Admin, I want to review, edit, approve, or reject AI-generated resume feedback so that users only see quality-controlled, human-verified content.","AC1: View full AI output in review modal with all feedback fields
+AC2: Approve action sets status = approved, records reviewed_by and reviewed_at
+AC3: Reject action sets status = rejected with mandatory rejection_reason
+AC4: Edit fields before approval — original AI output preserved in admin_audit_log
+AC5: Audit log entry created for each review action",2,2,1,3,Not Started,,
+14,AI Interview Prep Pipeline,CREATE Interview Questions,User,"As a User, I want to generate categorized interview questions from a job description so that I can prepare for trade job interviews.","AC1: Job description input validated (min 10 chars, max 2000 chars)
+AC2: Quota and deduplication checks
+AC3: Cloudflare Workflow generates 3 question categories via OpenRouter
+AC4: Questions returned immediately to user — NO admin gate
+AC5: Results persisted to interview_questions and usage recorded atomically",1,3,1,4,Not Started,,
+15,AI Interview Prep Pipeline,READ Interview Questions History,User,"As a User, I want to see my previously generated question sets so that I can revisit my interview prep materials.","AC1: Display most recent question set with all 3 categories
+AC2: Show total question count and generation date
+AC3: Scoped to authenticated user only",1,1,1,2,Not Started,,
+16,Admin Panel & Governance,READ All Resume Feedback (Admin),Admin,"As an Admin, I want to see all submitted resume feedback entries so that I can manage the review queue efficiently.","AC1: List all feedback with user name, trade program, status, score, date
+AC2: Search by user name or email
+AC3: Filter by status (pending_review / approved / rejected)
+AC4: Sort by date (newest first default)",2,2,1,3,Not Started,,
+17,Admin Panel & Governance,READ Waitlist Entries (Admin),Admin,"As an Admin, I want to view all waitlist signups so that I can assess market interest and outreach candidates.","AC1: Trade grad waitlist tab with search/filter by name, email, trade, location
+AC2: Employer waitlist tab with search/filter by name, company, trades hiring for
+AC3: Display submission counts per trade program",2,1,1,3,Not Started,,
+18,Admin Panel & Governance,EXPORT Data to CSV,Admin,"As an Admin, I want to export waitlist and feedback data to CSV so that I can analyze it in external tools.","AC1: Export trade grad waitlist as CSV with all columns
+AC2: Export employer waitlist as CSV
+AC3: Export resume feedback as CSV
+AC4: Filename includes export timestamp",1,2,1,3,Not Started,,
+19,Admin Panel & Governance,READ Admin Audit Log,Admin,"As an Admin, I want to see the audit trail of all administrative actions so that governance and accountability are traceable.","AC1: Chronological list of all admin actions
+AC2: Each entry shows actor, action type, target entity, timestamp
+AC3: Filter by action type (approve, reject, edit, export, grant_role)",1,1,1,2,Not Started,,
+20,Waitlist & Contact System,CREATE Trade Grad Waitlist Entry,Visitor,"As a Visitor, I want to sign up for the trade graduate waitlist so that I get early access to Kraftworks when the career fair launches.","AC1: Form fields — full name, email, trade program (dropdown), state, city, consent
+AC2: Validation — required fields enforced, valid email format
+AC3: Record saved to D1 trade_grad_waitlist via unauthenticated Worker
+AC4: Confirmation email sent via Resend
+AC5: Success message displayed",1,1,1,2,Not Started,,
+21,Waitlist & Contact System,CREATE Employer Waitlist Entry,Visitor,"As a Visitor (employer), I want to sign up for the employer waitlist so that I can hire trade graduates when the platform launches.","AC1: Form fields — full name, job title, company email, trades hiring for, hiring volume, state, city, consent
+AC2: Record saved to D1 employer_waitlist
+AC3: Confirmation email sent via Resend",1,1,1,2,Not Started,,
+22,Waitlist & Contact System,CREATE Contact Submission,Visitor,"As a Visitor, I want to submit a contact inquiry so that I can reach Kraftworks for questions, partnerships, or support.","AC1: Contact form with name, email, subject (optional), message
+AC2: Submission persisted to D1 contact_submissions with status = new
+AC3: Admin notification email sent via Resend
+AC4: Success confirmation shown to user",1,1,1,2,Not Started,,
+23,Email Notification System,SETUP Resend Integration,System,"As the System, I want Resend fully configured so that Workers can send transactional emails with production-grade deliverability.","AC1: Resend API key configured as Worker secret
+AC2: Sender domain verified with SPF, DKIM, DMARC records
+AC3: Reusable email-sending helper function available to all Workers",0,2,1,3,Not Started,,
+24,Email Notification System,CREATE Email Templates,System,"As the System, I want professional email templates for all notification types so that communications are consistent and branded.","AC1: Admin notification template — new resume feedback submission
+AC2: User confirmation template — waitlist signup acknowledgment
+AC3: Contact inquiry acknowledgment template",0,2,0,2,Not Started,,
+25,User Dashboard,READ Dashboard Overview,User,"As a User, I want to see my dashboard with resume status, AI usage progress, and interview prep history so that I have a single view of my career readiness.","AC1: Resume card — file name, upload date, feedback status badge
+AC2: AI usage card — progress bar showing remaining actions (X of 3)
+AC3: Interview prep card — latest question set summary
+AC4: All data fetched from Worker API endpoints",2,2,1,3,Not Started,,
+26,User Dashboard,READ AI Usage Status,User,"As a User, I want to see my remaining AI actions displayed prominently so that I make informed decisions before using an AI feature.","AC1: Display 'X of 3 remaining' with visual progress indicator
+AC2: Usage list shows action type and date
+AC3: Real-time count update after each AI action completes",1,1,1,2,Not Started,,

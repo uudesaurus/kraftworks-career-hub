@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kraftworks Career Hub — Product Backlog, Epic Analysis &amp; Pricing</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --navy: #10233f;
+            --blue: #1f5eff;
+            --blue-soft: #eaf1ff;
+            --teal: #0f766e;
+            --teal-soft: #ccfbf1;
+            --amber: #b7791f;
+            --amber-soft: #fff7e8;
+            --red: #b42318;
+            --red-soft: #fef3f2;
+            --ink: #1e293b;
+            --muted: #64748b;
+            --line: #d9e2ec;
+            --surface: #f8fafc;
+            --white: #ffffff;
+            --success: #15803d;
+            --success-soft: #dcfce7;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--ink);
+            background: var(--white);
+            font-size: 13px;
+            line-height: 1.65;
+        }
+
+        .page {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 40px 32px 72px;
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--navy);
+            margin-bottom: 6px;
+        }
+
+        h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--blue);
+            margin-top: 48px;
+            margin-bottom: 14px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--blue);
+        }
+
+        h3 {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--navy);
+            margin-top: 28px;
+            margin-bottom: 10px;
+        }
+
+        p { margin-bottom: 10px; }
+
+        .subtitle {
+            font-size: 15px;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        .meta {
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 28px;
+        }
+
+        /* ── Tables ── */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 14px 0 24px;
+            font-size: 12px;
+        }
+
+        th, td {
+            border: 1px solid var(--line);
+            padding: 8px 10px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            background: var(--navy);
+            color: var(--white);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+        }
+
+        tr:nth-child(even) td { background: var(--surface); }
+
+        .sp { text-align: center; font-weight: 600; white-space: nowrap; }
+
+        .sp-total {
+            text-align: center;
+            font-weight: 700;
+            color: var(--blue);
+            white-space: nowrap;
+        }
+
+        /* Epic header rows */
+        .epic-row td {
+            background: var(--blue-soft) !important;
+            font-weight: 700;
+            color: var(--navy);
+            border-top: 2px solid var(--blue);
+        }
+
+        .grand-row td {
+            background: var(--navy) !important;
+            color: var(--white) !important;
+            font-weight: 700;
+            font-size: 13px;
+        }
+
+        /* Boxes */
+        .box {
+            border: 1px solid var(--line);
+            border-left: 5px solid var(--blue);
+            background: var(--blue-soft);
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin: 14px 0;
+        }
+
+        .box.teal { border-left-color: var(--teal); background: var(--teal-soft); }
+        .box.amber { border-left-color: var(--amber); background: var(--amber-soft); }
+        .box.red { border-left-color: var(--red); background: var(--red-soft); }
+
+        .pill {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            margin-right: 6px;
+        }
+
+        .pill-fe { background: #dbeafe; color: #1d4ed8; }
+        .pill-be { background: var(--teal-soft); color: var(--teal); }
+        .pill-int { background: var(--amber-soft); color: var(--amber); }
+
+        code {
+            background: #f1f5f9;
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-family: 'SF Mono', Menlo, Consolas, monospace;
+        }
+
+        .pricing-table td:nth-child(2) { text-align: right; font-weight: 600; }
+        .pricing-table .subtotal td { border-top: 2px solid var(--ink); font-weight: 700; }
+        .pricing-table .total td { background: var(--navy) !important; color: var(--white) !important; font-weight: 700; font-size: 14px; }
+
+        .note { font-size: 11px; color: var(--muted); margin-top: 8px; }
+
+        @media print {
+            .page { padding: 16px; max-width: 100%; }
+            h1 { font-size: 22px; }
+            table { font-size: 10px; }
+            th, td { padding: 5px 6px; }
+            .page-break { page-break-before: always; }
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+    <h1>Kraftworks Career Hub — Product Backlog &amp; Project Analysis</h1>
+    <p class="subtitle">Complete sprint backlog, epic analysis, timeline breakdown, and pricing for the Cloudflare backend migration</p>
+    <p class="meta">
+        Version 1.0 &nbsp;|&nbsp; March 27, 2026 &nbsp;|&nbsp;
+        Aligned with: ERD Model, Backend Architecture Proposal (Section 6 &amp; 7), UX Flow Comparison &nbsp;|&nbsp;
+        Engineer: Mahmud Asrul (Solo Product Engineer)
+    </p>
+
+    <div class="box">
+        <p><strong>Scope.</strong> This document covers the full backend migration from Supabase to the proposed Cloudflare stack (Clerk + D1 + R2 + Workers + Workflows + OpenRouter + Resend), including all necessary frontend API integration changes and end-to-end integration testing. Every backlog item traces directly to an ERD entity, a backend architecture component, or a UX flow documented in the companion proposal files.</p>
+    </div>
+
+    <div class="box teal">
+        <p><strong>Story Point Convention.</strong>
+            <span class="pill pill-fe">FE</span> Frontend work (React component changes, API call rewiring, UI state updates).
+            <span class="pill pill-be">BE</span> Backend work (Workers, D1 schema, Workflows, external service integration).
+            <span class="pill pill-int">INT</span> Integration testing (end-to-end flow verification, edge case testing, deployment validation).
+        </p>
+        <p style="margin-top:8px;"><strong>Total formula:</strong> Total = max(FE, BE) + Integration — because a single engineer executes FE and BE sequentially per story, so the longer track determines base effort, plus integration is always additive.</p>
+        <p style="margin-top:6px;"><strong>Throughput:</strong> 8 story points per day (senior engineer, 4 focused hours/day, ~30 min per SP average).</p>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════════
+         SHEET 1: COMPLETE PRODUCT BACKLOG
+         ════════════════════════════════════════════════════════════════════ -->
+    <h2>Sheet 1 — Complete Product Backlog</h2>
+
+    <table>
+        <tr>
+            <th style="width:3%;">#</th>
+            <th style="width:14%;">Backlog Name</th>
+            <th style="width:7%;">Role</th>
+            <th style="width:26%;">User Story</th>
+            <th style="width:30%;">Acceptance Criteria</th>
+            <th style="width:4%;">FE</th>
+            <th style="width:4%;">BE</th>
+            <th style="width:4%;">INT</th>
+            <th style="width:4%;">Total</th>
+        </tr>
+
+        <!-- ── EPIC 1: INFRASTRUCTURE SETUP ── -->
+        <tr class="epic-row">
+            <td colspan="9">EPIC 1 — Infrastructure Setup</td>
+        </tr>
+
+        <tr>
+            <td class="sp">1</td>
+            <td>CREATE D1 Database Schema</td>
+            <td>Engineer</td>
+            <td>As an Engineer, I want to create the complete D1 database schema so that all backend services have a properly structured, migration-versioned data layer aligned with the ERD.</td>
+            <td>
+                AC1: All 12 tables created in D1 — <code>users</code>, <code>user_roles</code>, <code>resumes</code>, <code>resume_feedback</code>, <code>interview_questions</code>, <code>ai_usage</code>, <code>trade_grad_waitlist</code>, <code>employer_waitlist</code>, <code>contact_submissions</code>, <code>admin_audit_log</code>, <code>email_events</code>, <code>workflow_runs</code><br><br>
+                AC2: All foreign keys, CHECK constraints, and recommended indexes applied per ERD specification<br><br>
+                AC3: Migration file versioned and idempotent (re-runnable without error)
+            </td>
+            <td class="sp">0</td>
+            <td class="sp">2</td>
+            <td class="sp">0</td>
+            <td class="sp-total">2</td>
+        </tr>
+
+        <tr>
+            <td class="sp">2</td>
+            <td>CONFIGURE R2 Storage Bucket</td>
+            <td>Engineer</td>
+            <td>As an Engineer, I want to configure the R2 storage bucket so that resume PDFs can be stored with user-scoped paths and proper access controls.</td>
+            <td>
+                AC1: R2 bucket created with private-by-default access policy<br><br>
+                AC2: CORS policy configured for the frontend domain<br><br>
+                AC3: Worker binding configured for direct R2 access without network hops
+            </td>
+            <td class="sp">0</td>
+            <td class="sp">1</td>
+            <td class="sp">0</td>
+            <td class="sp-total">1</td>
+        </tr>
+
+        <tr>
+            <td class="sp">3</td>
+            <td>CONFIGURE Worker Project &amp; Environment</td>
+            <td>Engineer</td>
+            <td>As an Engineer, I want the Worker project scaffolded with all bindings and environment secrets so that services deploy consistently across dev and production.</td>
+            <td>
+                AC1: <code>wrangler.toml</code> configured with D1, R2, and environment bindings<br><br>
+                AC2: Secrets set — Clerk keys, OpenRouter API key, Resend API key<br><br>
+                AC3: Local dev environment functional with <code>wrangler dev</code>
+            </td>
+            <td class="sp">0</td>
+            <td class="sp">1</td>
+            <td class="sp">0</td>
+            <td class="sp-total">1</td>
+        </tr>
+
+        <!-- ── EPIC 2: AUTHENTICATION & AUTHORIZATION ── -->
+        <tr class="epic-row">
+            <td colspan="9">EPIC 2 — Authentication &amp; Authorization (Clerk Migration)</td>
+        </tr>
+
+        <tr>
+            <td class="sp">4</td>
+            <td>SETUP Clerk Frontend Auth</td>
+            <td>User</td>
+            <td>As a User, I want to sign up and sign in using Clerk's authentication components so that I have a secure, modern authentication experience replacing the current Supabase Auth forms.</td>
+            <td>
+                AC1: <code>ClerkProvider</code> wraps the React application with correct publishable key<br><br>
+                AC2: Sign-in and Sign-up pages render Clerk pre-built components (replacing current email/password forms)<br><br>
+                AC3: Session state accessible via Clerk's <code>useAuth()</code> / <code>useUser()</code> hooks<br><br>
+                AC4: <code>ProtectedRoute</code> component updated to use Clerk session check, redirects unauthenticated users to sign-in
+            </td>
+            <td class="sp">3</td>
+            <td class="sp">0</td>
+            <td class="sp">1</td>
+            <td class="sp-total">4</td>
+        </tr>
+
+        <tr>
+            <td class="sp">5</td>
+            <td>CREATE Clerk Webhook User Sync</td>
+            <td>System</td>
+            <td>As the System, I want to receive Clerk webhook events so that user records are automatically synced to D1 on every signup, profile update, and deletion.</td>
+            <td>
+                AC1: Worker endpoint receives <code>user.created</code> webhook and inserts into <code>users</code> table<br><br>
+                AC2: Worker receives <code>user.updated</code> webhook and updates <code>users</code> record<br><br>
+                AC3: Webhook signature verified using Clerk's SVIX library<br><br>
+                AC4: If role mapping exists in Clerk metadata, <code>user_roles</code> is upserted
+            </td>
+            <td class="sp">0</td>
+            <td class="sp">2</td>
+            <td class="sp">1</td>
+            <td class="sp-total">3</td>
+        </tr>
+
+        <tr>
+            <td class="sp">6</td>
+            <td>CREATE JWT Verification Middleware</td>
+            <td>System</td>
+            <td>As the System, I want all authenticated Worker endpoints to verify Clerk JWTs so that only valid, non-expired sessions can access protected resources.</td>
+            <td>
+                AC1: JWT signature verified against Clerk JWKS endpoint (cached at edge after first fetch)<br><br>
+                AC2: Token expiry validated; expired tokens return 401<br><br>
+                AC3: User ID extracted from JWT claims and injected into request context for downstream handlers<br><br>
+                AC4: Invalid or missing tokens return 401 with descriptive error
+            </td>
+            <td class="sp">0</td>
+            <td class="sp">2</td>
+            <td class="sp">0</td>
+            <td class="sp-total">2</td>
+        </tr>
+
+        <tr>
+            <td class="sp">7</td>
+            <td>CREATE Admin Role Gate Middleware</td>
+            <td>Admin</td>
+            <td>As an Admin, I want role-based access control enforced at the Worker level so that only users with the admin role can access admin-only endpoints.</td>
+            <td>
+                AC1: Middleware queries <code>user_roles</code> table for the authenticated user<br><br>
+                AC2: Non-admin users receive 403 Forbidden<br><br>
+                AC3: Admin check reusable across all admin Worker routes
+            </td>
+            <td class="sp">0</td>
+            <td class="sp">1</td>
+            <td class="sp">1</td>
+            <td class="sp-total">2</td>
+        </tr>
+
+        <!-- ── EPIC 3: RESUME MANAGEMENT ── -->
+        <tr class="epic-row">
+            <td colspan="9">EPIC 3 — Resume Management</td>
+        </tr>
+
+        <tr>
+            <td class="sp">8</td>
+            <td>CREATE Resume Upload</td>
+            <td>User</td>
+            <td>As a User, I want to upload my resume as a PDF so that I can receive AI-powered feedback and use it for interview prep.</td>
+            <td>
+                AC1: File validation — PDF only, max 5 MB<br><br>
+                AC2: PDF stored in R2 under user-scoped path (<code>{user_id}/resume.pdf</code>)<br><br>
+                AC3: SHA-256 hash computed server-side for deduplication<br><br>
+                AC4: Metadata record created in D1 <code>resumes</code> table (file_name, file_path, file_size, file_hash, trade_program)<br><br>
+                AC5: Previous active resume for the same user set to <code>is_active = 0</code><br><br>
+                AC6: Frontend re-wired from Supabase Storage to Worker upload endpoint
+            </td>
+            <td class="sp">2</td>
+            <td class="sp">2</td>
+            <td class="sp">1</td>
+            <td class="sp-total">3</td>
+        </tr>
+
+        <tr>
+            <td class="sp">9</td>
+            <td>READ Resume Details</td>
+            <td>User</td>
+            <td>As a User, I want to see my uploaded resume details so that I know what file is currently active and its feedback status.</td>
+            <td>
+                AC1: Display file name, upload date, file size<br><br>
+                AC2: Show feedback status badge (Uploaded / Pending Review / Feedback Ready)<br><br>
+                AC3: Scoped by authenticated user's ID — users cannot see other users' resumes
+            </td>
+            <td class="sp">1</td>
+            <td class="sp">1</td>
+            <td class="sp">1</td>
+            <td class="sp-total">2</td>
+        </tr>
+
+        <tr>
+            <td class="sp">10</td>
+            <td>DELETE Resume</td>
+            <td>User</td>
+            <td>As a User, I want to delete my resume so that I can remove outdated files and upload a new version.</td>
+            <td>
+                AC1: R2 object deleted on confirmed removal<br><br>
+                AC2: D1 record soft-deleted (deactivated) to preserve audit trail<br><br>
+                AC3: Associated feedback records display "Resume removed" state
+            </td>
+            <td class="sp">1</td>
+            <td class="sp">1</td>
+            <td class="sp">1</td>
+            <td class="sp-total">2</td>
+        </tr>
+
+        <!-- ── EPIC 4: AI RESUME FEEDBACK PIPELINE ── -->
+        <tr class="epic-row">
+            <td colspan="9">EPIC 4 — AI Resume Feedback Pipeline (Cloudflare Workflow + OpenRouter)</td>
+        </tr>
+
+        <tr>
+            <td class="sp">11</td>
+            <td>CREATE Resume Feedback Request</td>
+            <td>User</td>
+            <td>As a User, I want to generate AI-powered resume feedback so that I receive a scored evaluation with strengths, improvements, and trade-specific suggestions.</td>
+            <td>
+                AC1: Quota check — reject if user has used ≥ 3 AI actions (configurable via <code>MAX_AI_ACTIONS</code> env var)<br><br>
+                AC2: Deduplication check — reject if same resume hash already processed (SHA-256 via <code>ai_usage.input_hash</code>)<br><br>
+                AC3: Cloudflare Workflow orchestrates 6 durable steps: Validate → Enrich Context → AI Inference (OpenRouter) → Normalize Output → Persist to D1 → Admin Notification (Resend)<br><br>
+                AC4: OpenRouter call uses structured tool-call schema forcing JSON output with all required fields<br><br>
+                AC5: Feedback saved to <code>resume_feedback</code> with <code>status = 'pending_review'</code>, all arrays populated (strengths, improvements, suggestions, trade_suggestions, actionable_steps)<br><br>
+                AC6: AI usage record created in same D1 transaction (atomic write)<br><br>
+                AC7: Workflow retries individual failed steps (max 3, exponential backoff) without repeating completed steps
+            </td>
+            <td class="sp">1</td>
+            <td class="sp">4</td>
+            <td class="sp">2</td>
+            <td class="sp-total">6</td>
+        </tr>
+
+        <tr>
+            <td class="sp">12</td>
+            <td>READ Resume Feedback</td>
+            <td>User</td>
+            <td>As a User, I want to see my resume feedback once an admin has approved it so that I can act on the evaluation.</td>
+            <td>
+                AC1: Feedback visible only when <code>status = 'approved'</code><br><br>
+                AC2: Display overall score (1–10), strengths, improvements, suggestions, trade-specific suggestions, actionable steps<br><br>
+                AC3: Show "Pending Review" state when <code>status = 'pending_review'</code>
+            </td>
+            <td class="sp">1</td>
+            <td class="sp">1</td>
+            <td class="sp">1</td>
+            <td class="sp-total">2</td>
+        </tr>
+
+        <tr>
+            <td class="sp">13</td>
+            <td>UPDATE Resume Feedback (Admin Review)</td>
+            <td>Admin</td>
+            <td>As an Admin, I want to review, edit, approve, or reject AI-generated resume feedback so that users only see quality-controlled, human-verified content.</td>
+            <td>
+                AC1: View full AI output in review modal with all feedback fields<br><br>
+                AC2: Approve action sets <code>status = 'approved'</code>, records <code>reviewed_by</code> and <code>reviewed_at</code><br><br>
+                AC3: Reject action sets <code>status = 'rejected'</code> with mandatory <code>rejection_reason</code><br><br>
+                AC4: Edit fields (score, arrays) before approval — original AI output preserved in <code>admin_audit_log</code><br><br>
+                AC5: Audit log entry created for each review action (approve/reject/edit)
+            </td>
+            <td class="sp">2</td>
+            <td class="sp">2</td>
+            <td class="sp">1</td>
+            <td class="sp-total">3</td>
+        </tr>
+
+        <!-- ── EPIC 5: AI INTERVIEW PREP PIPELINE ── -->
+        <tr class="epic-row">
+            <td colspan="9">EPIC 5 — AI Interview Prep Pipeline (Cloudflare Workflow + OpenRouter)</td>
+        </tr>
+
+        <tr>
+            <td class="sp">14</td>
+            <td>CREATE Interview Questions</td>
+            <td>User</td>
+            <td>As a User, I want to generate categorized interview questions from a job description so that I can prepare for trade job interviews with technical, behavioral, and situational questions.</td>
+            <td>
+                AC1: Job description input validated (min 10 chars, max 2,000 chars)<br><br>
+                AC2: Quota and deduplication checks (same as feedback pipeline)<br><br>
+                AC3: Cloudflare Workflow generates 3 question categories via OpenRouter: technical (Bloom's Apply/Analyse), behavioral (STAR-formatted, Bloom's Evaluate), situational (Bloom's Create/Evaluate)<br><br>
+                AC4: Questions returned immediately to user — NO admin gate (lower risk profile per architecture decision)<br><br>
+                AC5: Results persisted to <code>interview_questions</code> and usage recorded in <code>ai_usage</code> atomically
+            </td>
+            <td class="sp">1</td>
+            <td class="sp">3</td>
+            <td class="sp">1</td>
+            <td class="sp-total">4</td>
+        </tr>
+
+        <tr>
+            <td class="sp">15</td>
+            <td>READ Interview Questions History</td>
+            <td>User</td>
+            <td>As a User, I want to see my previously generated question sets so that I can revisit my interview prep materials.</td>
+            <td>
+                AC1: Display most recent question set with all 3 categories<br><br>
+                AC2: Show total question count and generation date<br><br>
+                AC3: Scoped to authenticated user only
+            </td>
+            <td class="sp">1</td>
+            <td class="sp">1</td>
+            <td class="sp">1</td>
+            <td class="sp-total">2</td>
+        </tr>
+
+        <!-- ── EPIC 6: ADMIN PANEL & GOVERNANCE ── -->
+        <tr class="epic-row">
+            <td colspan="9">EPIC 6 — Admin Panel &amp; Governance</td>
+        </tr>
+
+        <tr>
+            <td class="sp">16</td>
+            <td>READ All Resume Feedback (Admin)</td>
+            <td>Admin</td>
+            <td>As an Admin, I want to see all submitted resume feedback entries so that I can manage the review queue efficiently.</td>
+            <td>
+                AC1: List all feedback with user name, trade program, status, score, date<br><br>
+                AC2: Search by user name or email<br><br>
+                AC3: Filter by status (pending_review / approved / rejected)<br><br>
+                AC4: Sort by date (newest first default)
+            </td>
+            <td class="sp">2</td>
+            <td class="sp">2</td>
+            <td class="sp">1</td>
+            <td class="sp-total">3</td>
+        </tr>
+
+        <tr>
+            <td class="sp">17</td>
+            <td>READ Waitlist Entries (Admin)</td>
+            <td>Admin</td>
+            <td>As an Admin, I want to view all waitlist signups so that I can assess market interest and outreach candidates.</td>
+            <td>
+                AC1: Trade grad waitlist tab with search/filter by name, email, trade, location<br><br>
+                AC2: Employer waitlist tab with search/filter by name, company, trades hiring for<br><br>
+                AC3: Display submission counts per trade program
+            </td>
+            <td class="sp">2</td>
+            <td class="sp">1</td>
+            <td class="sp">1</td>
+            <td class="sp-total">3</td>
+        </tr>
+
+        <tr>
+            <td class="sp">18</td>
+            <td>EXPORT Data to CSV</td>
+            <td>Admin</td>
+            <td>As an Admin, I want to export waitlist and feedback data to CSV so that I can analyze it in external tools.</td>
+            <td>
+                AC1: Export trade grad waitlist as CSV with all columns<br><br>
+                AC2: Export employer waitlist as CSV<br><br>
+                AC3: Export resume feedback as CSV<br><br>
+                AC4: Filename includes export timestamp
+            </td>
+            <td class="sp">1</td>
+            <td class="sp">2</td>
+            <td class="sp">1</td>
+            <td class="sp-total">3</td>
+        </tr>
+
+        <tr>
+            <td class="sp">19</td>
+            <td>READ Admin Audit Log</td>
+            <td>Admin</td>
+            <td>As an Admin, I want to see the audit trail of all administrative actions so that governance and accountability are traceable.</td>
+            <td>
+                AC1: Chronological list of all admin actions<br><br>
+                AC2: Each entry shows actor, action type, target entity, timestamp<br><br>
+                AC3: Filter by action type (approve, reject, edit, export, grant_role)
+            </td>
+            <td class="sp">1</td>
+            <td class="sp">1</td>
+            <td class="sp">1</td>
+            <td class="sp-total">2</td>
+        </tr>
+
+        <!-- ── EPIC 7: WAITLIST & CONTACT ── -->
+        <tr class="epic-row">
+            <td colspan="9">EPIC 7 — Waitlist &amp; Contact System</td>
+        </tr>
+
+        <tr>
+            <td class="sp">20</td>
+            <td>CREATE Trade Grad Waitlist Entry</td>
+            <td>Visitor</td>
+            <td>As a Visitor, I want to sign up for the trade graduate waitlist so that I get early access to Kraftworks when the career fair launches.</td>
+            <td>
+                AC1: Form fields — full name, email, trade program (dropdown), state (dropdown), city, consent checkbox<br><br>
+                AC2: Validation — required fields enforced, valid email format<br><br>
+                AC3: Record saved to D1 <code>trade_grad_waitlist</code> via unauthenticated Worker endpoint<br><br>
+                AC4: Confirmation email sent to user via Resend<br><br>
+                AC5: Success message displayed on submission
+            </td>
+            <td class="sp">1</td>
+            <td class="sp">1</td>
+            <td class="sp">1</td>
+            <td class="sp-total">2</td>
+        </tr>
+
+        <tr>
+            <td class="sp">21</td>
+            <td>CREATE Employer Waitlist Entry</td>
+            <td>Visitor</td>
+            <td>As a Visitor (employer), I want to sign up for the employer waitlist so that I can hire trade graduates when the platform launches.</td>
+            <td>
+                AC1: Form fields — full name, job title, company email, trades hiring for, hiring volume (dropdown), state, city, consent<br><br>
+                AC2: Record saved to D1 <code>employer_waitlist</code><br><br>
+                AC3: Confirmation email sent via Resend
+            </td>
+            <td class="sp">1</td>
+            <td class="sp">1</td>
+            <td class="sp">1</td>
+            <td class="sp-total">2</td>
+        </tr>
+
+        <tr>
+            <td class="sp">22</td>
+            <td>CREATE Contact Submission</td>
+            <td>Visitor</td>
+            <td>As a Visitor, I want to submit a contact inquiry so that I can reach Kraftworks for questions, partnerships, or support.</td>
+            <td>
+                AC1: Contact form with name, email, subject (optional), message<br><br>
+                AC2: Submission persisted to D1 <code>contact_submissions</code> with <code>status = 'new'</code><br><br>
+                AC3: Admin notification email sent via Resend with inquiry details<br><br>
+                AC4: Success confirmation shown to user
+            </td>
+            <td class="sp">1</td>
+            <td class="sp">1</td>
+            <td class="sp">1</td>
+            <td class="sp-total">2</td>
+        </tr>
+
+        <!-- ── EPIC 8: EMAIL NOTIFICATION SYSTEM ── -->
+        <tr class="epic-row">
+            <td colspan="9">EPIC 8 — Email Notification System (Resend)</td>
+        </tr>
+
+        <tr>
+            <td class="sp">23</td>
+            <td>SETUP Resend Integration</td>
+            <td>System</td>
+            <td>As the System, I want Resend fully configured so that Workers can send transactional emails with production-grade deliverability.</td>
+            <td>
+                AC1: Resend API key configured as Worker secret<br><br>
+                AC2: Sender domain verified with SPF, DKIM, DMARC records<br><br>
+                AC3: Reusable email-sending helper function available to all Workers
+            </td>
+            <td class="sp">0</td>
+            <td class="sp">2</td>
+            <td class="sp">1</td>
+            <td class="sp-total">3</td>
+        </tr>
+
+        <tr>
+            <td class="sp">24</td>
+            <td>CREATE Email Templates</td>
+            <td>System</td>
+            <td>As the System, I want professional email templates for all notification types so that communications are consistent and branded.</td>
+            <td>
+                AC1: Admin notification template — new resume feedback submission (includes user name, trade, resume file, admin panel link)<br><br>
+                AC2: User confirmation template — waitlist signup acknowledgment<br><br>
+                AC3: Contact inquiry acknowledgment template
+            </td>
+            <td class="sp">0</td>
+            <td class="sp">2</td>
+            <td class="sp">0</td>
+            <td class="sp-total">2</td>
+        </tr>
+
+        <!-- ── EPIC 9: USER DASHBOARD ── -->
+        <tr class="epic-row">
+            <td colspan="9">EPIC 9 — User Dashboard</td>
+        </tr>
+
+        <tr>
+            <td class="sp">25</td>
+            <td>READ Dashboard Overview</td>
+            <td>User</td>
+            <td>As a User, I want to see my dashboard with resume status, AI usage progress, and interview prep history so that I have a single view of my career readiness.</td>
+            <td>
+                AC1: Resume card — file name, upload date, feedback status badge<br><br>
+                AC2: AI usage card — progress bar showing remaining actions (X of 3), list of recent AI actions with type and date<br><br>
+                AC3: Interview prep card — latest question set summary, total questions count<br><br>
+                AC4: All data fetched from Worker API endpoints (replacing direct Supabase queries)
+            </td>
+            <td class="sp">2</td>
+            <td class="sp">2</td>
+            <td class="sp">1</td>
+            <td class="sp-total">3</td>
+        </tr>
+
+        <tr>
+            <td class="sp">26</td>
+            <td>READ AI Usage Status</td>
+            <td>User</td>
+            <td>As a User, I want to see my remaining AI actions displayed prominently so that I make informed decisions before using an AI feature.</td>
+            <td>
+                AC1: Display "X of 3 remaining" with visual progress indicator<br><br>
+                AC2: Usage list shows action type (resume_feedback / interview_questions) and date<br><br>
+                AC3: Real-time count update after each AI action completes
+            </td>
+            <td class="sp">1</td>
+            <td class="sp">1</td>
+            <td class="sp">1</td>
+            <td class="sp-total">2</td>
+        </tr>
+
+        <!-- ── GRAND TOTAL ── -->
+        <tr class="grand-row">
+            <td colspan="5" style="text-align:right;">GRAND TOTAL (26 Stories, 9 Epics)</td>
+            <td class="sp">25</td>
+            <td class="sp">40</td>
+            <td class="sp">22</td>
+            <td class="sp-total">66</td>
+        </tr>
+    </table>
+
+    <!-- ════════════════════════════════════════════════════════════════════
+         SHEET 2: EPIC ANALYSIS
+         ════════════════════════════════════════════════════════════════════ -->
+    <h2 class="page-break">Sheet 2 — Epic Analysis</h2>
+
+    <p>Summary of effort by epic. Total Story Points is the sum of per-story totals within each epic. Days calculated at <strong>8 story points per day</strong> (solo senior engineer, 4 focused hours/day).</p>
+
+    <table>
+        <tr>
+            <th style="width:30%;">Epic</th>
+            <th style="width:10%;">Role</th>
+            <th style="width:10%;">FE Story Pts</th>
+            <th style="width:10%;">BE Story Pts</th>
+            <th style="width:12%;">Integration Story Pts</th>
+            <th style="width:12%;">Total Story Pts</th>
+            <th style="width:12%;">Days (8 pts/day)</th>
+        </tr>
+
+        <tr>
+            <td><strong>Infrastructure Setup</strong> Total</td>
+            <td>Engineer</td>
+            <td class="sp">0</td>
+            <td class="sp">4</td>
+            <td class="sp">0</td>
+            <td class="sp-total">4</td>
+            <td class="sp">1</td>
+        </tr>
+
+        <tr>
+            <td><strong>Authentication &amp; Authorization</strong> Total</td>
+            <td>User / System / Admin</td>
+            <td class="sp">3</td>
+            <td class="sp">5</td>
+            <td class="sp">3</td>
+            <td class="sp-total">11</td>
+            <td class="sp">2</td>
+        </tr>
+
+        <tr>
+            <td><strong>Resume Management</strong> Total</td>
+            <td>User</td>
+            <td class="sp">4</td>
+            <td class="sp">4</td>
+            <td class="sp">3</td>
+            <td class="sp-total">7</td>
+            <td class="sp">1</td>
+        </tr>
+
+        <tr>
+            <td><strong>AI Resume Feedback Pipeline</strong> Total</td>
+            <td>User / Admin</td>
+            <td class="sp">4</td>
+            <td class="sp">7</td>
+            <td class="sp">4</td>
+            <td class="sp-total">11</td>
+            <td class="sp">2</td>
+        </tr>
+
+        <tr>
+            <td><strong>AI Interview Prep Pipeline</strong> Total</td>
+            <td>User</td>
+            <td class="sp">2</td>
+            <td class="sp">4</td>
+            <td class="sp">2</td>
+            <td class="sp-total">6</td>
+            <td class="sp">1</td>
+        </tr>
+
+        <tr>
+            <td><strong>Admin Panel &amp; Governance</strong> Total</td>
+            <td>Admin</td>
+            <td class="sp">6</td>
+            <td class="sp">6</td>
+            <td class="sp">4</td>
+            <td class="sp-total">11</td>
+            <td class="sp">2</td>
+        </tr>
+
+        <tr>
+            <td><strong>Waitlist &amp; Contact System</strong> Total</td>
+            <td>Visitor</td>
+            <td class="sp">3</td>
+            <td class="sp">3</td>
+            <td class="sp">3</td>
+            <td class="sp-total">6</td>
+            <td class="sp">1</td>
+        </tr>
+
+        <tr>
+            <td><strong>Email Notification System</strong> Total</td>
+            <td>System</td>
+            <td class="sp">0</td>
+            <td class="sp">4</td>
+            <td class="sp">1</td>
+            <td class="sp-total">5</td>
+            <td class="sp">1</td>
+        </tr>
+
+        <tr>
+            <td><strong>User Dashboard</strong> Total</td>
+            <td>User</td>
+            <td class="sp">3</td>
+            <td class="sp">3</td>
+            <td class="sp">2</td>
+            <td class="sp-total">5</td>
+            <td class="sp">1</td>
+        </tr>
+
+        <tr class="grand-row">
+            <td><strong>Grand Total</strong></td>
+            <td></td>
+            <td class="sp">25</td>
+            <td class="sp">40</td>
+            <td class="sp">22</td>
+            <td class="sp-total">66</td>
+            <td class="sp">9</td>
+        </tr>
+    </table>
+
+    <div class="box amber">
+        <p><strong>Effort Distribution.</strong> Backend (BE) accounts for <strong>46%</strong> of total story points — expected for a backend migration project. Frontend (FE) at <strong>29%</strong> reflects the existing React codebase requiring only API call rewiring, not feature building. Integration (INT) at <strong>25%</strong> reflects the importance of end-to-end validation for a migration where every data path must be verified against the new stack.</p>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════════
+         SHEET 3: TIMELINE & PRICING BREAKDOWN
+         ════════════════════════════════════════════════════════════════════ -->
+    <h2 class="page-break">Sheet 3 — Timeline &amp; Pricing Breakdown</h2>
+
+    <h3>3.1 Timeline Breakdown</h3>
+
+    <table class="pricing-table" style="max-width: 560px;">
+        <tr><th style="width: 65%;">Timeline</th><th style="width: 35%;">Value</th></tr>
+        <tr><td>Total Story Points</td><td>66</td></tr>
+        <tr><td>Story Points per Day</td><td>8</td></tr>
+        <tr><td>Raw Working Days</td><td>9</td></tr>
+        <tr><td>Slack Time per 3 Epics (in days)</td><td>1</td></tr>
+        <tr><td>Total Slack Time (9 epics, in days)</td><td>3</td></tr>
+        <tr class="subtotal"><td><strong>Total Development Days</strong></td><td><strong>12</strong></td></tr>
+    </table>
+
+    <h3>3.2 Effort Breakdown by Track</h3>
+
+    <table class="pricing-table" style="max-width: 560px;">
+        <tr><th style="width: 65%;">Track</th><th style="width: 35%;">Story Points / Days</th></tr>
+        <tr><td>Backend Development (Workers, D1, Workflows, R2, OpenRouter, Resend)</td><td>40 SP / 5 days</td></tr>
+        <tr><td>Frontend Integration (Clerk UI, API rewiring, state management)</td><td>25 SP / 4 days</td></tr>
+        <tr><td>End-to-End Integration Testing</td><td>22 SP / 3 days</td></tr>
+        <tr class="subtotal"><td><strong>Total (sequentially, 1 engineer)</strong></td><td><strong>66 SP / 12 days</strong></td></tr>
+    </table>
+
+    <div class="box">
+        <p><strong>Backend-only cost reference.</strong> If only backend development is scoped (40 SP, 5 working days), the development cost is: 5 × $120/day = <strong>$600 ≈ Rp 10,140,000</strong>. This is the core infrastructure build cost before frontend integration and testing.</p>
+    </div>
+
+    <h3>3.3 Pricing Breakdown</h3>
+
+    <table class="pricing-table" style="max-width: 640px;">
+        <tr><th style="width: 60%;">Item</th><th style="width: 40%;">Amount</th></tr>
+        <tr><td>Hourly Rate per Engineer</td><td>$30 USD (Rp 507,000)</td></tr>
+        <tr><td>Working Hours per Day</td><td>4 hours</td></tr>
+        <tr><td>Daily Rate per Engineer</td><td>$120 USD (Rp 2,028,000)</td></tr>
+        <tr><td>Total Engineers</td><td>1</td></tr>
+        <tr><td>Total Development Days</td><td>12</td></tr>
+        <tr class="subtotal"><td><strong>Total Development Fee</strong></td><td><strong>Rp 24,336,000</strong></td></tr>
+        <tr><td colspan="2" style="height: 8px; border: none; background: none !important;"></td></tr>
+        <tr>
+            <td>
+                Management / PM Deliverables Fee (20%)<br>
+                <span style="font-size: 11px; color: var(--muted);">Includes: PRD, ERD Model, UX Flow Comparison,<br>Backend Architecture Design (Before &amp; After)</span>
+            </td>
+            <td>Rp 4,867,200</td>
+        </tr>
+        <tr class="total"><td><strong>Project Value</strong></td><td><strong>Rp 29,203,200</strong></td></tr>
+    </table>
+
+    <div class="box teal">
+        <p><strong>What the management fee covers.</strong> The 20% management fee is not a markup — it represents the product engineering deliverables already completed:</p>
+        <ol style="margin: 8px 0 0 18px;">
+            <li><strong>Product Requirements Document (PRD)</strong> — Full backend architecture proposal (Sections 6 &amp; 7), including technology rationale, request lifecycle, service comparisons, and AI methodology framework.</li>
+            <li><strong>Entity Relationship Diagram (ERD)</strong> — 12-entity data model with lifecycle policies, referential rules, and interaction models.</li>
+            <li><strong>UX Flow Comparison</strong> — 17-route current vs. proposed flow analysis with impact assessment.</li>
+            <li><strong>Backend Architecture Design</strong> — Before (Supabase) and After (Cloudflare) architecture with service-by-service migration mapping.</li>
+        </ol>
+    </div>
+
+    <h3>3.4 Rate Basis</h3>
+
+    <table style="max-width: 560px;">
+        <tr><th>Parameter</th><th>Value</th><th>Rationale</th></tr>
+        <tr>
+            <td>Hourly Rate</td>
+            <td>$30 USD</td>
+            <td>Senior product engineer rate — product management + full-stack development + AI pipeline architecture in a single resource.</td>
+        </tr>
+        <tr>
+            <td>Daily Hours</td>
+            <td>4 hours</td>
+            <td>Focused deep-work blocks. Research shows sustained cognitive output plateaus beyond 4–5 hours for complex engineering work.</td>
+        </tr>
+        <tr>
+            <td>SP Throughput</td>
+            <td>8 SP/day</td>
+            <td>~30 minutes per story point average. Senior engineer on a well-defined stack (Cloudflare Workers, D1, Clerk SDK) with clear data model and architecture already designed.</td>
+        </tr>
+        <tr>
+            <td>Exchange Rate</td>
+            <td>Rp 16,900 / $1 USD</td>
+            <td>Approximate market rate as of March 2026. Final invoicing may use spot rate at time of billing.</td>
+        </tr>
+    </table>
+
+    <h3>3.5 Delivery Schedule</h3>
+
+    <table style="max-width: 700px;">
+        <tr><th style="width: 8%;">Week</th><th style="width: 12%;">Days</th><th style="width: 35%;">Epics</th><th style="width: 45%;">Milestones</th></tr>
+        <tr>
+            <td>Week 1</td>
+            <td>Day 1–5</td>
+            <td>Infrastructure, Auth, Resume, Email Setup</td>
+            <td>D1 schema live, Clerk auth working, resume upload functional, Resend configured. <strong>Backend foundation complete.</strong></td>
+        </tr>
+        <tr>
+            <td>Week 2</td>
+            <td>Day 6–9</td>
+            <td>AI Feedback Pipeline, AI Questions Pipeline, Dashboard</td>
+            <td>Both Cloudflare Workflows operational, OpenRouter integration verified, dashboard data flowing. <strong>Core AI features complete.</strong></td>
+        </tr>
+        <tr>
+            <td>Week 3</td>
+            <td>Day 10–12</td>
+            <td>Admin Panel, Waitlist/Contact, Integration Testing</td>
+            <td>Admin review flow verified, public forms working, end-to-end regression pass. <strong>UAT-ready.</strong></td>
+        </tr>
+    </table>
+
+    <h3>3.6 Payment Terms</h3>
+
+    <table class="pricing-table" style="max-width: 560px;">
+        <tr><th style="width: 60%;">Term</th><th style="width: 40%;">Amount</th></tr>
+        <tr>
+            <td>Term 1 — Down Payment (50%)<br><span style="font-size: 11px; color: var(--muted);">Due upon project kickoff</span></td>
+            <td>Rp 14,083,200</td>
+        </tr>
+        <tr>
+            <td>Term 2 — Final Delivery (50%)<br><span style="font-size: 11px; color: var(--muted);">Due upon UAT sign-off / handover</span></td>
+            <td>Rp 14,083,200</td>
+        </tr>
+        <tr class="total">
+            <td><strong>Total</strong></td>
+            <td><strong>Rp 28,166,400</strong></td>
+        </tr>
+    </table>
+
+    <div class="box amber">
+        <p><strong>Tax Note (PPN / PPh).</strong> As an individual service provider below the PKP (Pengusaha Kena Pajak) registration threshold of Rp 4.8 billion annual revenue, PPN (Pajak Pertambahan Nilai / VAT at 12%) is <strong>not charged</strong> on this quotation. Income tax obligations (PPh 21/PPh 23) are the responsibility of the service provider per applicable Indonesian tax regulations. If the client requires a tax invoice (Faktur Pajak) or PPN inclusion for their own accounting purposes, this can be discussed and the total adjusted accordingly.</p>
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════════════
+         SHEET 4: ERD → BACKLOG TRACEABILITY MATRIX
+         ════════════════════════════════════════════════════════════════════ -->
+    <h2 class="page-break">Sheet 4 — ERD &amp; Architecture Traceability Matrix</h2>
+
+    <p>Every backlog item traces to an ERD entity, a backend architecture component, or both. This matrix ensures nothing in the data model or architecture proposal is left unimplemented.</p>
+
+    <table>
+        <tr>
+            <th style="width: 20%;">ERD Entity / Architecture Component</th>
+            <th style="width: 12%;">Backlog Items</th>
+            <th style="width: 18%;">CREATE Story</th>
+            <th style="width: 18%;">READ Story</th>
+            <th style="width: 18%;">UPDATE Story</th>
+            <th style="width: 14%;">DELETE Story</th>
+        </tr>
+        <tr>
+            <td><code>users</code></td>
+            <td>#5</td>
+            <td>#5 (Clerk webhook sync)</td>
+            <td>#25 (Dashboard user data)</td>
+            <td>#5 (user.updated webhook)</td>
+            <td>—</td>
+        </tr>
+        <tr>
+            <td><code>user_roles</code></td>
+            <td>#5, #7</td>
+            <td>#5 (Role mapping via webhook)</td>
+            <td>#7 (Admin gate query)</td>
+            <td>—</td>
+            <td>—</td>
+        </tr>
+        <tr>
+            <td><code>resumes</code></td>
+            <td>#8, #9, #10</td>
+            <td>#8 (Upload)</td>
+            <td>#9 (Details view)</td>
+            <td>#8 (Deactivate previous)</td>
+            <td>#10 (Soft delete)</td>
+        </tr>
+        <tr>
+            <td><code>resume_feedback</code></td>
+            <td>#11, #12, #13, #16</td>
+            <td>#11 (AI generation)</td>
+            <td>#12 (User view), #16 (Admin list)</td>
+            <td>#13 (Admin review)</td>
+            <td>—</td>
+        </tr>
+        <tr>
+            <td><code>interview_questions</code></td>
+            <td>#14, #15</td>
+            <td>#14 (AI generation)</td>
+            <td>#15 (History view)</td>
+            <td>—</td>
+            <td>—</td>
+        </tr>
+        <tr>
+            <td><code>ai_usage</code></td>
+            <td>#11, #14, #25, #26</td>
+            <td>#11, #14 (Atomic write)</td>
+            <td>#26 (Usage status), #25 (Dashboard)</td>
+            <td>— (Immutable)</td>
+            <td>— (Retain)</td>
+        </tr>
+        <tr>
+            <td><code>trade_grad_waitlist</code></td>
+            <td>#17, #20</td>
+            <td>#20 (Public form)</td>
+            <td>#17 (Admin view)</td>
+            <td>—</td>
+            <td>—</td>
+        </tr>
+        <tr>
+            <td><code>employer_waitlist</code></td>
+            <td>#17, #21</td>
+            <td>#21 (Public form)</td>
+            <td>#17 (Admin view)</td>
+            <td>—</td>
+            <td>—</td>
+        </tr>
+        <tr>
+            <td><code>contact_submissions</code></td>
+            <td>#22</td>
+            <td>#22 (Contact form)</td>
+            <td>— (Future admin inbox)</td>
+            <td>—</td>
+            <td>—</td>
+        </tr>
+        <tr>
+            <td><code>admin_audit_log</code></td>
+            <td>#13, #18, #19</td>
+            <td>#13 (Review action), #18 (Export)</td>
+            <td>#19 (Log view)</td>
+            <td>— (Immutable)</td>
+            <td>— (Never delete)</td>
+        </tr>
+        <tr>
+            <td><code>email_events</code></td>
+            <td>#23</td>
+            <td>#23 (Resend setup)</td>
+            <td>— (Future monitoring)</td>
+            <td>—</td>
+            <td>—</td>
+        </tr>
+        <tr>
+            <td><code>workflow_runs</code></td>
+            <td>#11, #14</td>
+            <td>#11, #14 (Workflow execution)</td>
+            <td>— (Future debugging)</td>
+            <td>—</td>
+            <td>—</td>
+        </tr>
+        <tr>
+            <td><strong>Clerk (Auth)</strong></td>
+            <td>#4, #5, #6</td>
+            <td>#4 (Frontend), #5 (Webhook)</td>
+            <td>#6 (JWT verification)</td>
+            <td>—</td>
+            <td>—</td>
+        </tr>
+        <tr>
+            <td><strong>Cloudflare R2</strong></td>
+            <td>#2, #8, #10, #11</td>
+            <td>#2 (Config), #8 (Upload)</td>
+            <td>#11 (PDF read for AI)</td>
+            <td>—</td>
+            <td>#10 (Object delete)</td>
+        </tr>
+        <tr>
+            <td><strong>OpenRouter</strong></td>
+            <td>#11, #14</td>
+            <td colspan="4">#11 (Resume feedback inference), #14 (Interview questions inference)</td>
+        </tr>
+        <tr>
+            <td><strong>Resend</strong></td>
+            <td>#20, #21, #22, #23, #24</td>
+            <td colspan="4">#23 (Setup), #24 (Templates), #20/#21/#22 (Transactional sends)</td>
+        </tr>
+        <tr>
+            <td><strong>Cloudflare Workflows</strong></td>
+            <td>#11, #14</td>
+            <td colspan="4">#11 (6-step resume feedback), #14 (4-step interview questions)</td>
+        </tr>
+    </table>
+
+    <div class="box">
+        <p><strong>Coverage verification.</strong> All 12 ERD entities have at least one backlog item. All 7 backend architecture components (Clerk, D1, R2, Workers, Workflows, OpenRouter, Resend) have explicit implementation stories. No entity or service is left without a delivery path.</p>
+    </div>
+
+</div>
+</body>
+</html>

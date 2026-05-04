@@ -1,0 +1,1548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kraftworks Career Hub - Product and Backend Requirements</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        :root {
+            --navy: #10233f;
+            --blue: #1f5eff;
+            --blue-soft: #eaf1ff;
+            --teal: #0f9d84;
+            --teal-soft: #e9fbf5;
+            --amber: #b7791f;
+            --amber-soft: #fff7e8;
+            --red: #b42318;
+            --red-soft: #fef3f2;
+            --ink: #142033;
+            --muted: #5c6b80;
+            --line: #d9e2ec;
+            --surface: #f7f9fc;
+            --white: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--ink);
+            background: var(--white);
+            font-size: 11pt;
+            line-height: 1.6;
+        }
+
+        @page {
+            size: A4;
+            margin: 1.6cm 1.8cm;
+            @top-left { content: "KRAFTWORKS CAREER HUB"; font-size: 9pt; color: #6b7280; }
+            @top-right { content: "PRODUCT AND BACKEND REQUIREMENTS"; font-size: 9pt; color: #6b7280; }
+            @bottom-center { content: "Page " counter(page) " of " counter(pages); font-size: 9pt; color: #6b7280; }
+        }
+
+        @media print {
+            .page-break {
+                page-break-before: always;
+            }
+
+            .avoid-break {
+                page-break-inside: avoid;
+            }
+        }
+
+        .cover {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 48px 24px;
+            page-break-after: always;
+            background:
+                radial-gradient(circle at top left, rgba(31, 94, 255, 0.10), transparent 34%),
+                radial-gradient(circle at bottom right, rgba(15, 157, 132, 0.10), transparent 28%),
+                linear-gradient(180deg, #ffffff 0%, #f7f9fc 100%);
+        }
+
+        .brand {
+            display: inline-block;
+            padding: 12px 24px;
+            border-radius: 999px;
+            background: var(--navy);
+            color: var(--white);
+            font-weight: 800;
+            letter-spacing: 0.14em;
+            font-size: 12px;
+            margin-bottom: 36px;
+        }
+
+        .cover h1 {
+            font-size: 38px;
+            line-height: 1.15;
+            color: var(--navy);
+            border: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .cover h2 {
+            font-size: 20px;
+            color: var(--muted);
+            font-weight: 500;
+            margin-top: 16px;
+        }
+
+        .cover-line {
+            width: 180px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--blue), var(--teal));
+            border-radius: 999px;
+            margin: 36px 0;
+        }
+
+        .cover-meta {
+            width: 100%;
+            max-width: 640px;
+            background: rgba(255, 255, 255, 0.85);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 24px;
+        }
+
+        .cover-meta table {
+            margin: 0;
+        }
+
+        .cover-meta td {
+            border-bottom: 1px solid var(--line);
+            padding: 10px 14px;
+        }
+
+        .cover-meta tr:last-child td {
+            border-bottom: none;
+        }
+
+        .confidential {
+            margin-top: 28px;
+            padding: 14px 18px;
+            border-radius: 12px;
+            background: var(--amber-soft);
+            border: 1px solid #f5d28a;
+            max-width: 640px;
+            font-size: 10.5pt;
+        }
+
+        .content {
+            width: 100%;
+        }
+
+        h1 {
+            font-size: 24px;
+            color: var(--navy);
+            font-weight: 800;
+            margin: 28px 0 14px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--blue);
+        }
+
+        h2 {
+            font-size: 17px;
+            color: var(--blue);
+            font-weight: 700;
+            margin: 22px 0 10px;
+        }
+
+        h3 {
+            font-size: 13px;
+            color: var(--navy);
+            font-weight: 700;
+            margin: 16px 0 8px;
+        }
+
+        p {
+            margin-bottom: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 14px 0 20px;
+            font-size: 10.3pt;
+        }
+
+        th {
+            background: var(--navy);
+            color: var(--white);
+            text-align: left;
+            font-weight: 700;
+            padding: 10px 12px;
+            vertical-align: top;
+        }
+
+        td {
+            border-bottom: 1px solid var(--line);
+            padding: 10px 12px;
+            vertical-align: top;
+        }
+
+        tr:nth-child(even) td {
+            background: var(--surface);
+        }
+
+        ul, ol {
+            margin: 10px 0 14px 22px;
+        }
+
+        li {
+            margin-bottom: 6px;
+        }
+
+        .toc {
+            margin-top: 22px;
+        }
+
+        .toc-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 8px 0;
+            border-bottom: 1px dotted var(--line);
+        }
+
+        .box {
+            border: 1px solid var(--line);
+            border-left: 5px solid var(--blue);
+            background: var(--blue-soft);
+            border-radius: 12px;
+            padding: 16px 18px;
+            margin: 16px 0;
+        }
+
+        .box.teal {
+            border-left-color: var(--teal);
+            background: var(--teal-soft);
+        }
+
+        .box.amber {
+            border-left-color: var(--amber);
+            background: var(--amber-soft);
+        }
+
+        .box.red {
+            border-left-color: var(--red);
+            background: var(--red-soft);
+        }
+
+        .tag-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+            margin: 16px 0;
+        }
+
+        .tag-card {
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 14px;
+            background: var(--white);
+        }
+
+        .tag-card strong {
+            color: var(--navy);
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .mono {
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', monospace;
+            font-size: 10pt;
+        }
+
+        .section-note {
+            color: var(--muted);
+            font-size: 10pt;
+            margin-top: -2px;
+            margin-bottom: 10px;
+        }
+
+        .footer-note {
+            margin-top: 32px;
+            padding-top: 14px;
+            border-top: 1px solid var(--line);
+            color: var(--muted);
+            font-size: 10pt;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <section class="cover">
+        <div class="brand">KRAFTWORKS</div>
+        <h1>Kraftworks Career Hub</h1>
+        <h2>Product Requirements and Backend Delivery Specification</h2>
+        <div class="cover-line"></div>
+        <div class="cover-meta avoid-break">
+            <table>
+                <tr><td>Document Name</td><td><strong>Kraftworks Career Hub Product and Backend Requirements</strong></td></tr>
+                <tr><td>Document Version</td><td><strong>2.0</strong></td></tr>
+                <tr><td>Document Date</td><td><strong>March 26, 2026</strong></td></tr>
+                <tr><td>Prepared For</td><td><strong>Kraftworks Stakeholders and Delivery Team</strong></td></tr>
+                <tr><td>Prepared By</td><td><strong>Product and Engineering Documentation</strong></td></tr>
+                <tr><td>Document Type</td><td><strong>Corporate-standard product, backend, and operational requirements baseline</strong></td></tr>
+            </table>
+        </div>
+        <div class="confidential">
+            This document is intended to serve as the working baseline for delivery, stakeholder alignment, engineering execution, review, and future scope control. It reflects the currently implemented platform and the backend responsibilities required to operate it to a professional standard.
+        </div>
+    </section>
+
+    <section class="content page-break">
+        <h1>Table of Contents</h1>
+        <div class="toc">
+            <div class="toc-row"><span>1. Executive Summary</span><span>2</span></div>
+            <div class="toc-row"><span>2. Business Context and Product Vision</span><span>3</span></div>
+            <div class="toc-row"><span>3. Personas and User Segments</span><span>4</span></div>
+            <div class="toc-row"><span>4. Scope Definition</span><span>5</span></div>
+            <div class="toc-row"><span>5. Functional Requirements by Epic</span><span>7</span></div>
+            <div class="toc-row"><span>6. Backend Architecture and Data Model</span><span>15</span></div>
+            <div class="toc-row"><span>7. Integration Requirements</span><span>18</span></div>
+            <div class="toc-row"><span>8. Pricing Rationale, Quotation Basis, and OPEX Estimation</span><span>20</span></div>
+            <div class="toc-row"><span>9. Security, Privacy, and Governance</span><span>22</span></div>
+            <div class="toc-row"><span>10. Delivery Assumptions, Risks, and Out of Scope</span><span>24</span></div>
+            <div class="toc-row"><span>11. Delivery Roadmap</span><span>26</span></div>
+            <div class="toc-row"><span>12. Revision History and Sign-off</span><span>27</span></div>
+        </div>
+    </section>
+
+    <section class="content page-break">
+        <h1>1. Executive Summary</h1>
+        <div class="box">
+            <p><strong>Kraftworks Career Hub</strong> is a trade-focused career support platform designed to help skilled workers and trade graduates improve job readiness through resume feedback, interview preparation, educational resources, and future employer engagement workflows.</p>
+            <p>This document upgrades the existing proposal into a structured corporate-standard requirements baseline. It is intended to remove ambiguity, define clear backend responsibilities, and document how the current platform should behave operationally, functionally, and administratively.</p>
+        </div>
+
+        <h2>1.1 Current Product Position</h2>
+        <p>The currently implemented application is a web platform built with React and Supabase that provides public content pages, authenticated career tools, AI-assisted workflows, administrative review functions, and waitlist capture for both trade graduates and employers.</p>
+
+        <h2>1.2 Primary Product Objectives</h2>
+        <ul>
+            <li>Increase job readiness for trade workers through actionable resume and interview support.</li>
+            <li>Create a controlled AI workflow where generated outputs are reviewed before end-user consumption when appropriate.</li>
+            <li>Capture early market demand from both candidates and employers prior to broader marketplace or career fair launch.</li>
+            <li>Maintain operational simplicity with a serverless backend, auditable data model, and clear role-based access boundaries.</li>
+        </ul>
+
+        <h2>1.3 Executive Delivery Summary</h2>
+        <table>
+            <tr><th>Area</th><th>Summary</th></tr>
+            <tr><td>Frontend Surface</td><td>Landing, auth, dashboard, resume review, interview prep, blog, toolkits, waitlist, contact, legal pages, admin portal.</td></tr>
+            <tr><td>Backend Platform</td><td>Supabase Auth, PostgreSQL, RLS, storage, edge functions, AI usage tracking, admin role gating, CSV exports.</td></tr>
+            <tr><td>AI Services</td><td>Resume feedback generation and interview question generation using edge functions with rate limiting and duplicate-input prevention.</td></tr>
+            <tr><td>Operational Controls</td><td>Admin approval flow for resume feedback, searchable admin tables, export capability, role-based access model.</td></tr>
+            <tr><td>Near-term Gaps</td><td>Email delivery completion, true PDF text extraction, richer analytics, employer workflows, and career fair execution layer.</td></tr>
+        </table>
+    </section>
+
+    <section class="content page-break">
+        <h1>2. Business Context and Product Vision</h1>
+        <h2>2.1 Problem Statement</h2>
+        <p>Trade graduates and skilled workers often lack affordable, immediate, and trade-specific support when preparing for employment opportunities. General career platforms are usually not optimized for certification-heavy roles, field-specific expectations, or early-career trade workflows. Employers also need a future path to reach this talent pool in a targeted way.</p>
+
+        <h2>2.2 Product Vision</h2>
+        <p>Kraftworks Career Hub should become a trusted digital career readiness platform for the skilled trades, combining practical learning resources, lightweight AI assistance, and controlled administrative review to produce career guidance that is useful, relevant, and safe enough for public rollout.</p>
+
+        <h2>2.3 Success Outcomes</h2>
+        <table>
+            <tr><th>Objective</th><th>Desired Outcome</th><th>Indicative Measurement</th></tr>
+            <tr><td>User Activation</td><td>Users create an account and complete at least one guided career action.</td><td>Signup to first meaningful action conversion rate.</td></tr>
+            <tr><td>Career Tool Adoption</td><td>Users upload resumes and generate interview practice outputs.</td><td>Resume upload rate and interview generation rate.</td></tr>
+            <tr><td>Operational Quality</td><td>Admin can review and approve AI outputs quickly and reliably.</td><td>Median feedback review time and error rate.</td></tr>
+            <tr><td>Market Validation</td><td>Trade graduates and employers register early interest.</td><td>Waitlist growth by segment and geography.</td></tr>
+            <tr><td>Platform Reliability</td><td>Users can access core tools without service disruption.</td><td>Availability, failed request rate, edge function success rate.</td></tr>
+        </table>
+    </section>
+
+    <section class="content page-break">
+        <h1>3. Personas and User Segments</h1>
+        <div class="tag-grid avoid-break">
+            <div class="tag-card">
+                <strong>Trade Graduate / Skilled Worker</strong>
+                Primary end user seeking resume help, interview preparation, and trade-specific guidance. May be unauthenticated at first and later become an authenticated dashboard user.
+            </div>
+            <div class="tag-card">
+                <strong>Admin / Reviewer</strong>
+                Internal operator responsible for approving resume feedback, reviewing captured leads, and maintaining data quality across the platform.
+            </div>
+            <div class="tag-card">
+                <strong>Employer / Recruiter</strong>
+                Prospect user interested in hiring trade talent. Current system supports waitlist registration rather than a full employer workspace.
+            </div>
+            <div class="tag-card">
+                <strong>Public Visitor</strong>
+                Unauthenticated visitor consuming content, discovering the brand, evaluating value, and potentially converting to waitlist or account signup.
+            </div>
+        </div>
+
+        <h2>3.1 Persona Expectations</h2>
+        <table>
+            <tr><th>Persona</th><th>Needs</th><th>Platform Response</th></tr>
+            <tr><td>Trade Graduate</td><td>Confidence, clarity, and relevant preparation help.</td><td>Resume upload, AI feedback workflow, interview question generator, career toolkit resources.</td></tr>
+            <tr><td>Admin</td><td>Control, auditability, quick review, manageable exports.</td><td>Role-restricted admin panel, searchable records, feedback approval, CSV export.</td></tr>
+            <tr><td>Employer</td><td>Low-friction expression of interest and future access to talent.</td><td>Employer waitlist capture and career fair interest path.</td></tr>
+            <tr><td>Public Visitor</td><td>Brand understanding and trust signals.</td><td>Landing page, blog, trade toolkit, contact, privacy, terms, future career fair messaging.</td></tr>
+        </table>
+    </section>
+
+    <section class="content page-break">
+        <h1>4. Scope Definition</h1>
+        <h2>4.1 In-Scope Product Modules</h2>
+        <table>
+            <tr><th>Module</th><th>Scope Status</th><th>Description</th></tr>
+            <tr><td>Public Marketing and Content Experience</td><td>In Scope</td><td>Landing, blog, contact, toolkit, legal pages, career fair teaser experience.</td></tr>
+            <tr><td>Authentication and Session Management</td><td>In Scope</td><td>Email/password sign up, sign in, session persistence, sign out.</td></tr>
+            <tr><td>User Dashboard</td><td>In Scope</td><td>User summary state including resume status, AI usage remaining, and interview history snapshot.</td></tr>
+            <tr><td>Resume Review Workflow</td><td>In Scope</td><td>Resume upload, delete, feedback request, admin review, approved feedback display.</td></tr>
+            <tr><td>Interview Preparation Workflow</td><td>In Scope</td><td>Job description submission and structured AI-generated question sets.</td></tr>
+            <tr><td>Admin Operations</td><td>In Scope</td><td>Resume feedback management, lead review, search, and CSV export.</td></tr>
+            <tr><td>Waitlist Capture</td><td>In Scope</td><td>Trade graduate and employer public submission forms.</td></tr>
+            <tr><td>Supabase Backend Layer</td><td>In Scope</td><td>Auth, storage, database, edge functions, RLS policies, role checks, and operational controls.</td></tr>
+        </table>
+
+        <h2>4.2 Out-of-Scope for This Baseline</h2>
+        <div class="box amber">
+            <ul>
+                <li>Production employer portal with job posting, applicant messaging, or candidate pipeline management.</li>
+                <li>Live digital career fair execution workflow beyond the current promotional holding page and waitlist capture.</li>
+                <li>Subscription billing, paid plans, or payment processing.</li>
+                <li>Full resume text parsing and scoring against structured job taxonomy data.</li>
+                <li>Native mobile application.</li>
+                <li>Automated email infrastructure beyond the currently stubbed notification pattern unless explicitly implemented.</li>
+            </ul>
+        </div>
+
+        <h2>4.3 Scope Control Principle</h2>
+        <p>Any requirement not explicitly defined in this document or traceably implied by a functional acceptance criterion should be treated as a future enhancement request rather than assumed delivery scope.</p>
+    </section>
+
+    <section class="content page-break">
+        <h1>5. Functional Requirements by Epic</h1>
+        <p class="section-note">The following epics are written in a professional backlog format so engineering, product, and stakeholders can align on expected behavior. IDs are assigned for traceability.</p>
+
+        <h2>Epic 1. Public Experience and Content Delivery</h2>
+        <table>
+            <tr><th>Backlog ID</th><th>Title</th><th>User Story</th><th>Acceptance Criteria</th></tr>
+            <tr>
+                <td>PE1</td>
+                <td>Landing Page Experience</td>
+                <td>As a public visitor, I want to understand the value of Kraftworks quickly so that I can decide whether to sign up or explore further.</td>
+                <td>
+                    PE1-AC1: Landing page shall communicate the platform purpose, target audience, and primary calls to action.<br>
+                    PE1-AC2: Visitor shall be able to navigate to authentication, career toolkit, blog, career fair, and waitlist journeys.<br>
+                    PE1-AC3: The page shall display trust-building content relevant to the trades audience.
+                </td>
+            </tr>
+            <tr>
+                <td>PE2</td>
+                <td>Career Toolkit Access</td>
+                <td>As a visitor or user, I want trade-specific resource pages so that I can access practical career materials relevant to my field.</td>
+                <td>
+                    PE2-AC1: System shall provide a toolkit hub and trade-specific routes for HVAC, Electrical, and Welding.<br>
+                    PE2-AC2: Each route shall present resources or outbound materials in a clear category structure.<br>
+                    PE2-AC3: Article pages shall support slug-based navigation for deeper educational content.
+                </td>
+            </tr>
+            <tr>
+                <td>PE3</td>
+                <td>Blog and Informational Content</td>
+                <td>As a public visitor, I want to read educational or brand content so that I can evaluate the relevance of the platform.</td>
+                <td>
+                    PE3-AC1: Blog index shall present multiple content cards with title, category, and summary metadata.<br>
+                    PE3-AC2: Content must remain readable on both desktop and mobile layouts.<br>
+                    PE3-AC3: Public users must not be required to authenticate to access informational content.
+                </td>
+            </tr>
+            <tr>
+                <td>PE4</td>
+                <td>Career Fair Holding Experience</td>
+                <td>As a prospect, I want to register interest in a future career fair so that I can be contacted when the service is launched.</td>
+                <td>
+                    PE4-AC1: Career fair page shall communicate that the feature is upcoming.<br>
+                    PE4-AC2: Candidate and employer pathways shall route users into the waitlist submission process.<br>
+                    PE4-AC3: The page may embed promotional media without blocking the call to action.
+                </td>
+            </tr>
+        </table>
+
+        <h2>Epic 2. Authentication and User Access</h2>
+        <table>
+            <tr><th>Backlog ID</th><th>Title</th><th>User Story</th><th>Acceptance Criteria</th></tr>
+            <tr>
+                <td>AU1</td>
+                <td>User Registration</td>
+                <td>As a new user, I want to create an account with my identity details so that I can access personalized career tools.</td>
+                <td>
+                    AU1-AC1: System shall support email and password registration.<br>
+                    AU1-AC2: Full name shall be captured and stored in user metadata at signup.<br>
+                    AU1-AC3: Successful registration shall establish an authenticated session according to Supabase Auth behavior.
+                </td>
+            </tr>
+            <tr>
+                <td>AU2</td>
+                <td>User Sign In and Session Persistence</td>
+                <td>As a returning user, I want to sign in and remain signed in so that I do not need to re-authenticate unnecessarily.</td>
+                <td>
+                    AU2-AC1: Email/password sign in shall restore access to protected routes.<br>
+                    AU2-AC2: Session state shall persist across refreshes according to the active auth provider implementation.<br>
+                    AU2-AC3: Protected routes shall redirect unauthenticated users to the authentication experience.
+                </td>
+            </tr>
+            <tr>
+                <td>AU3</td>
+                <td>Role-Restricted Admin Access</td>
+                <td>As an internal admin, I want admin-only access enforced so that sensitive operational data is not exposed to standard users.</td>
+                <td>
+                    AU3-AC1: Admin route access shall require both authentication and presence of the admin role.<br>
+                    AU3-AC2: Non-admin users attempting to access admin routes shall be redirected away from the admin area.<br>
+                    AU3-AC3: Admin role validation shall be performed against the user roles data source.
+                </td>
+            </tr>
+        </table>
+
+        <h2>Epic 3. User Dashboard and Guided Career Tools</h2>
+        <table>
+            <tr><th>Backlog ID</th><th>Title</th><th>User Story</th><th>Acceptance Criteria</th></tr>
+            <tr>
+                <td>DT1</td>
+                <td>User Dashboard Overview</td>
+                <td>As an authenticated user, I want a single dashboard that summarizes my progress so that I can understand what to do next.</td>
+                <td>
+                    DT1-AC1: Dashboard shall display a greeting using available user identity metadata.<br>
+                    DT1-AC2: Dashboard shall show resume status, AI usage remaining, and latest interview preparation summary where data exists.<br>
+                    DT1-AC3: Dashboard shall provide quick access to the major user journeys.
+                </td>
+            </tr>
+            <tr>
+                <td>DT2</td>
+                <td>AI Usage Visibility</td>
+                <td>As a user, I want to know how many AI actions remain so that I can use limited functionality intentionally.</td>
+                <td>
+                    DT2-AC1: System shall display remaining AI actions out of the configured maximum.<br>
+                    DT2-AC2: Remaining count shall update after successful AI actions are recorded.<br>
+                    DT2-AC3: Duplicate input attempts shall not silently consume quota and must return a clear reason to the user.
+                </td>
+            </tr>
+        </table>
+
+        <h2>Epic 4. Resume Review Workflow</h2>
+        <table>
+            <tr><th>Backlog ID</th><th>Title</th><th>User Story</th><th>Acceptance Criteria</th></tr>
+            <tr>
+                <td>RR1</td>
+                <td>Resume Upload and Storage</td>
+                <td>As a user, I want to upload my resume so that the platform can evaluate it and retain it for future career assistance flows.</td>
+                <td>
+                    RR1-AC1: System shall accept a single resume per user in PDF format according to current product behavior.<br>
+                    RR1-AC2: Upload must store file metadata including file name, size, path, and timestamps.<br>
+                    RR1-AC3: User shall be able to delete and replace the uploaded resume.<br>
+                    RR1-AC4: Storage access must respect private user scoping and backend security policies.
+                </td>
+            </tr>
+            <tr>
+                <td>RR2</td>
+                <td>AI Feedback Generation</td>
+                <td>As a user, I want AI-generated resume feedback so that I can improve my resume before applying for jobs.</td>
+                <td>
+                    RR2-AC1: Feedback generation shall require authentication and a valid uploaded resume record.<br>
+                    RR2-AC2: The backend shall validate AI usage eligibility before invoking the AI service.<br>
+                    RR2-AC3: Generated output shall include strengths, improvements, suggestions, overall score, trade suggestions, and actionable steps.<br>
+                    RR2-AC4: Initial feedback status shall be stored as pending review rather than displayed immediately as approved output.
+                </td>
+            </tr>
+            <tr>
+                <td>RR3</td>
+                <td>Feedback Status Lifecycle</td>
+                <td>As a user, I want to understand whether my feedback is under review or ready so that I know what to expect next.</td>
+                <td>
+                    RR3-AC1: Pending review state shall be visible in the UI with clear messaging.<br>
+                    RR3-AC2: Approved feedback shall become visible after admin approval.<br>
+                    RR3-AC3: Feedback state transitions must persist in the database and be reflected consistently on dashboard and resume review surfaces.
+                </td>
+            </tr>
+        </table>
+
+        <h2>Epic 5. Interview Preparation Workflow</h2>
+        <table>
+            <tr><th>Backlog ID</th><th>Title</th><th>User Story</th><th>Acceptance Criteria</th></tr>
+            <tr>
+                <td>IP1</td>
+                <td>Job Description Intake</td>
+                <td>As a user, I want to submit a target job description so that the platform can generate role-relevant interview practice.</td>
+                <td>
+                    IP1-AC1: User shall be able to enter a job description in a long-form text area.<br>
+                    IP1-AC2: Input must satisfy the minimum validation threshold before generation is allowed.<br>
+                    IP1-AC3: The feature shall require an uploaded resume when current UX logic depends on resume context.
+                </td>
+            </tr>
+            <tr>
+                <td>IP2</td>
+                <td>Structured Question Generation</td>
+                <td>As a user, I want categorized interview questions so that I can practice multiple dimensions of an interview.</td>
+                <td>
+                    IP2-AC1: Backend shall generate grouped questions across technical, behavioral, and situational categories.<br>
+                    IP2-AC2: Generated results shall be stored for retrieval as the user’s latest session history.<br>
+                    IP2-AC3: The platform shall prevent duplicate submission with identical input according to usage tracking rules.
+                </td>
+            </tr>
+        </table>
+
+        <h2>Epic 6. Admin Operations</h2>
+        <table>
+            <tr><th>Backlog ID</th><th>Title</th><th>User Story</th><th>Acceptance Criteria</th></tr>
+            <tr>
+                <td>AD1</td>
+                <td>Resume Feedback Review Queue</td>
+                <td>As an admin, I want to review all generated feedback so that only acceptable content is surfaced to users.</td>
+                <td>
+                    AD1-AC1: Admin panel shall list resume feedback entries sorted by most recent submission.<br>
+                    AD1-AC2: Admin shall be able to search records and inspect detailed output contents.<br>
+                    AD1-AC3: Admin shall be able to edit structured feedback fields and approve pending items.<br>
+                    AD1-AC4: Approval must update the persistent feedback status used by the user-facing interface.
+                </td>
+            </tr>
+            <tr>
+                <td>AD2</td>
+                <td>Waitlist Review for Trade Graduates</td>
+                <td>As an admin, I want to review candidate interest submissions so that the business can evaluate audience demand.</td>
+                <td>
+                    AD2-AC1: Admin shall be able to list trade graduate waitlist records with search capability.<br>
+                    AD2-AC2: Records shall include identity, trade program, location, and submission timestamp.<br>
+                    AD2-AC3: Admin shall be able to export records as CSV.
+                </td>
+            </tr>
+            <tr>
+                <td>AD3</td>
+                <td>Waitlist Review for Employers</td>
+                <td>As an admin, I want to review employer interest submissions so that go-to-market activity can be prioritized intelligently.</td>
+                <td>
+                    AD3-AC1: Admin shall be able to list employer waitlist records with search capability.<br>
+                    AD3-AC2: Records shall include contact and hiring intent metadata.<br>
+                    AD3-AC3: Admin shall be able to export records as CSV.
+                </td>
+            </tr>
+        </table>
+
+        <h2>Epic 7. Waitlist and Contact Capture</h2>
+        <table>
+            <tr><th>Backlog ID</th><th>Title</th><th>User Story</th><th>Acceptance Criteria</th></tr>
+            <tr>
+                <td>WL1</td>
+                <td>Trade Graduate Waitlist Submission</td>
+                <td>As a prospective candidate, I want to register interest without creating an account so that I can be contacted later.</td>
+                <td>
+                    WL1-AC1: Public form shall collect full name, email, trade program, state, city, and consent.<br>
+                    WL1-AC2: Submission shall persist to the correct backend table without requiring authentication.<br>
+                    WL1-AC3: The user shall receive a clear success notification after submission.
+                </td>
+            </tr>
+            <tr>
+                <td>WL2</td>
+                <td>Employer Waitlist Submission</td>
+                <td>As an employer, I want to express hiring interest so that I can be contacted regarding future platform opportunities.</td>
+                <td>
+                    WL2-AC1: Public form shall collect full name, job title, company email, trades hiring for, hiring volume, state, city, and consent.<br>
+                    WL2-AC2: Submission shall persist to the employer waitlist data source without requiring authentication.<br>
+                    WL2-AC3: The user shall receive confirmation that their information was captured successfully.
+                </td>
+            </tr>
+            <tr>
+                <td>WL3</td>
+                <td>Contact Accessibility</td>
+                <td>As a public visitor, I want a straightforward way to contact Kraftworks so that I can ask questions without friction.</td>
+                <td>
+                    WL3-AC1: Contact page shall expose a clear contact mechanism.<br>
+                    WL3-AC2: Contact information must remain available without authentication.<br>
+                    WL3-AC3: Legal pages must be reachable from the public site to support basic trust and compliance expectations.
+                </td>
+            </tr>
+        </table>
+    </section>
+
+    <section class="content page-break">
+        <h1>6. Backend Architecture and Data Model</h1>
+
+        <h2>6.1 Architecture Philosophy: Why Serverless, Why Not a Traditional Server</h2>
+
+        <p>The Kraftworks backend is designed as a <strong>fully serverless, edge-first architecture</strong>. This is a deliberate engineering and business decision, not a default. Understanding why this matters requires examining the alternatives and why they were rejected for this specific product context.</p>
+
+        <h3>The Traditional Server Model and Why It Does Not Fit</h3>
+        <p>A traditional backend would involve a persistent server process — typically a Node.js Express application, a Django service, or a Rails monolith — running continuously on a cloud VM or container (EC2, DigitalOcean Droplet, Railway, Render). This approach requires:</p>
+        <ul>
+            <li><strong>Always-on compute cost.</strong> A server runs 24/7 regardless of whether any user is making a request. For an early-stage product with unpredictable traffic, this means paying for idle capacity the majority of the time.</li>
+            <li><strong>Infrastructure maintenance.</strong> Someone must manage OS patching, runtime version upgrades, SSL certificate renewal, load balancer configuration, health checks, and restart policies. This is operational overhead that directly competes with product development time.</li>
+            <li><strong>Scaling complexity.</strong> When traffic spikes — for example, if a career fair drives 2,000 concurrent waitlist submissions — a traditional server would need auto-scaling groups, load balancers, and connection pooling to avoid collapsing. Each of these is a configuration surface area that introduces failure modes.</li>
+            <li><strong>Cold-start irrelevance.</strong> The common argument against serverless is cold-start latency. For Kraftworks, no user-facing operation is latency-critical to the millisecond level. AI generation calls take 2-8 seconds regardless of infrastructure. A 50ms cold start on a Cloudflare Worker is imperceptible.</li>
+        </ul>
+
+        <h3>Why Serverless at the Edge</h3>
+        <p>Cloudflare Workers execute on Cloudflare's global edge network — over 300 data centres worldwide. When a user in Houston submits a resume, the Worker that handles that request runs in the nearest Cloudflare point of presence, not in a single us-east-1 data centre thousands of miles away. This means:</p>
+        <ul>
+            <li><strong>Zero infrastructure management.</strong> There is no server to provision, patch, scale, or monitor. Cloudflare handles all of that. The engineering team writes functions, deploys them, and Cloudflare runs them globally.</li>
+            <li><strong>Pay-per-invocation pricing.</strong> Cloudflare Workers are billed per request (first 100,000 requests/day free on the free tier, then $0.50 per million). For a beta product with hundreds of users, this means near-zero compute cost during low traffic, with automatic scaling to handle spikes without configuration changes.</li>
+            <li><strong>Sub-millisecond cold starts.</strong> Unlike AWS Lambda (which can take 200ms-3s for cold starts depending on runtime), Cloudflare Workers use the V8 isolate model — the same engine that powers Chrome — which boots in under 5ms. There is no container to spin up, no runtime to initialise.</li>
+            <li><strong>Built-in global distribution.</strong> Every Worker is automatically deployed to all 300+ edge locations. There is no CDN layer to configure separately. The function IS the edge.</li>
+            <li><strong>Native integration with D1, R2, and Queues.</strong> Cloudflare's database (D1), object storage (R2), and message queue services are first-party integrations that work inside the same Worker runtime without external network hops.</li>
+        </ul>
+
+        <h3>Why This Matters for Kraftworks Specifically</h3>
+        <p>Kraftworks is a career readiness platform for trade workers. The product value is in the AI-generated content (resume feedback, interview questions), the admin governance workflow, and the lead capture pipeline. None of these require a persistent, stateful server process. Every operation is a discrete request-response cycle: receive input, validate it, call an external AI service or write to a database, return a result. This maps perfectly to the serverless execution model. The team can focus entirely on product logic and AI quality rather than on infrastructure operations.</p>
+
+        <div class="box teal">
+            <p><strong>Architecture principle:</strong> Every backend responsibility in Kraftworks is implemented as a stateless, independently deployable function that runs at the network edge. There is no central server process, no container orchestration layer, and no infrastructure to manage. The system scales to zero when unused and scales to global capacity when needed, without human intervention.</p>
+        </div>
+
+        <h2>6.2 Core Technology Stack</h2>
+
+        <table>
+            <tr><th>Layer</th><th>Technology</th><th>Responsibility</th><th>Why This Choice</th></tr>
+            <tr>
+                <td>Client Application</td>
+                <td>React 18, TypeScript 5.8, Vite 5.4</td>
+                <td>Route-driven web experience, component rendering, client-side state management.</td>
+                <td>React provides the component model and ecosystem maturity. TypeScript adds compile-time safety. Vite provides sub-second hot reload for developer velocity.</td>
+            </tr>
+            <tr>
+                <td>UI Foundation</td>
+                <td>Tailwind CSS, shadcn/ui, Radix UI</td>
+                <td>Consistent design system, accessible component primitives, responsive layouts.</td>
+                <td>Tailwind eliminates CSS specificity conflicts. shadcn/ui provides unstyled, copy-pasteable components. Radix handles accessibility (ARIA roles, keyboard navigation) at the primitive level.</td>
+            </tr>
+            <tr>
+                <td>Authentication</td>
+                <td><strong>Clerk</strong></td>
+                <td>User registration, sign-in, session management, JWT issuance, user metadata storage, role-based access control.</td>
+                <td>Clerk provides a production-ready auth layer with pre-built UI components, webhook-driven user lifecycle events, organisation/role management, and a dashboard for user administration — eliminating the need to build auth UI and session handling from scratch. Clerk JWTs are verified at the edge in Cloudflare Workers without additional middleware.</td>
+            </tr>
+            <tr>
+                <td>Database</td>
+                <td><strong>Cloudflare D1</strong> (SQLite-based)</td>
+                <td>Transactional data persistence for resumes, feedback, questions, waitlists, roles, and AI usage tracking.</td>
+                <td>D1 runs on Cloudflare's edge inside the same network as Workers — zero-latency database reads from the function that needs the data. SQLite's simplicity (no connection pooling, no ORM required) reduces operational complexity. D1 handles replication and durability automatically. For the data volume Kraftworks operates at (thousands of records, not millions), D1's SQLite model is more than sufficient and avoids the cost and complexity of a managed PostgreSQL instance.</td>
+            </tr>
+            <tr>
+                <td>Object Storage</td>
+                <td><strong>Cloudflare R2</strong></td>
+                <td>Private resume file storage (PDFs), scoped by user ID.</td>
+                <td>R2 is S3-compatible object storage with zero egress fees. Resume PDFs are stored once and read infrequently (during feedback generation and admin review). R2 eliminates the egress cost model that makes S3/GCS expensive for file-serving use cases. Accessed directly from Workers without external network hops.</td>
+            </tr>
+            <tr>
+                <td>Serverless Logic</td>
+                <td><strong>Cloudflare Workers</strong></td>
+                <td>All backend business logic: auth verification, input validation, AI pipeline orchestration, database operations, email triggers, admin operations.</td>
+                <td>Workers run on V8 isolates (not containers), providing sub-5ms cold starts, automatic global distribution, and per-request billing. Each Worker is a self-contained function that handles one responsibility.</td>
+            </tr>
+            <tr>
+                <td>Workflow Orchestration</td>
+                <td><strong>Cloudflare Workflows</strong></td>
+                <td>Multi-step AI pipeline coordination: input validation, context enrichment, AI inference, output normalisation, persistence, and notification — as a durable, retryable sequence.</td>
+                <td>Workflows provide durable execution for multi-step operations. If an AI call fails at step 3 of 6, the workflow retries from step 3 — not from the beginning. This prevents duplicate database writes, duplicate AI charges, and incomplete state. Without Workflows, a simple Worker would need manual retry logic, idempotency guards, and compensating transactions for every failure mode.</td>
+            </tr>
+            <tr>
+                <td>AI / LLM Provider</td>
+                <td><strong>OpenRouter</strong></td>
+                <td>Unified API gateway for accessing multiple LLM providers (Anthropic, Google, OpenAI, Meta) through a single endpoint and single API key.</td>
+                <td>OpenRouter provides provider abstraction — if Google's Gemini is down or rate-limited, the system can fall back to Anthropic's Claude or Meta's Llama without changing a single line of code. It also provides cost observability, per-model pricing comparison, and a single billing relationship instead of managing API keys across 4+ providers. OpenRouter supports the OpenAI-compatible chat completions API, so the integration contract is identical regardless of which underlying model is selected.</td>
+            </tr>
+            <tr>
+                <td>Email Service</td>
+                <td><strong>Resend</strong></td>
+                <td>Transactional email delivery for admin notifications, user confirmations, and operational alerts.</td>
+                <td>Resend provides a developer-first email API with React-based email templates, delivery tracking, and webhook callbacks. Unlike the previous stub notification system, Resend delivers production-grade email with SPF/DKIM/DMARC compliance out of the box. The API is a single HTTP POST from a Worker — no SMTP configuration, no email server management.</td>
+            </tr>
+            <tr>
+                <td>State / Data Fetching</td>
+                <td>TanStack Query v5 + React Context API</td>
+                <td>Client-side data synchronisation, cache management, optimistic updates, and reactive UI state.</td>
+                <td>TanStack Query handles request deduplication, background refetching, cache invalidation, and stale-while-revalidate patterns — eliminating manual loading/error/data state management for every API call.</td>
+            </tr>
+            <tr>
+                <td>Testing</td>
+                <td>Vitest 3.2, Testing Library, Playwright 1.57</td>
+                <td>Unit, component, and end-to-end test coverage.</td>
+                <td>Vitest shares Vite's config and transform pipeline, avoiding duplicate build configuration. Playwright provides cross-browser E2E testing with auto-waiting and trace recording.</td>
+            </tr>
+        </table>
+
+        <h2>6.3 How Everything Connects: The Request Lifecycle</h2>
+
+        <p>Understanding the Kraftworks architecture requires tracing how a single request flows through every layer. Here is the complete path for the two core operations.</p>
+
+        <h3>6.3.1 Resume Feedback Request Lifecycle</h3>
+        <p>When a trade graduate clicks "Get Resume Feedback" on the Resume Review page, the following sequence executes:</p>
+        <ol>
+            <li><strong>Client initiates.</strong> The React frontend calls the <code>generate-resume-feedback</code> Cloudflare Worker endpoint via an authenticated HTTP POST. The request includes the Clerk session JWT in the Authorization header and the <code>resume_id</code> in the request body.</li>
+            <li><strong>Edge receives.</strong> The request hits the nearest Cloudflare edge node. The Worker boots in under 5ms (V8 isolate cold start). The Clerk JWT is verified using Clerk's JWKS endpoint (cached at the edge after first fetch).</li>
+            <li><strong>Cloudflare Workflow begins.</strong> The Worker dispatches a durable Workflow instance. The Workflow is a multi-step sequence where each step is independently retryable. The Workflow ID is the <code>user_id + resume_id</code> combination, providing natural idempotency.</li>
+            <li><strong>Step 1 — Input Validation.</strong> The Workflow queries Cloudflare D1 to verify: (a) the resume_id exists and belongs to the authenticated user, (b) the user has not exceeded their AI quota (check <code>ai_usage</code> table, count records where <code>user_id</code> matches, reject if count ≥ 3), (c) the resume hash has not been processed before (deduplication check via SHA-256 hash in <code>ai_usage.input_hash</code>). If any check fails, the Workflow terminates with a user-readable error and no further steps execute.</li>
+            <li><strong>Step 2 — Context Enrichment.</strong> The Workflow fetches resume metadata from D1 (<code>file_name</code>, <code>trade_program</code>) and optionally retrieves the resume PDF from Cloudflare R2 for text extraction. The trade program field is mapped to domain-specific context using O*NET-aligned trade descriptors. This context string becomes part of the AI prompt.</li>
+            <li><strong>Step 3 — AI Inference via OpenRouter.</strong> The Workflow sends a structured request to OpenRouter's <code>/api/v1/chat/completions</code> endpoint. The request specifies the target model (e.g., <code>google/gemini-2.5-flash</code> or <code>anthropic/claude-3.5-haiku</code>), the system prompt (trade-aware career coach persona), the user prompt (resume context), and a forced function-call tool schema that constrains the output to the exact JSON structure required. OpenRouter routes the request to the selected model provider, handles rate limiting, and returns the structured response. If the model returns an error or times out, the Workflow retries this step up to 3 times with exponential backoff.</li>
+            <li><strong>Step 4 — Output Normalisation.</strong> The Workflow parses the tool-call JSON from the AI response. It validates that all required fields are present (<code>overall_score</code>, <code>strengths</code>, <code>improvements</code>, <code>suggestions</code>, <code>trade_suggestions</code>, <code>actionable_steps</code>). The score is clamped to the 1-10 range. Arrays are trimmed to expected cardinality. Malformed responses trigger a retry of Step 3 with a slightly modified prompt.</li>
+            <li><strong>Step 5 — Persistence.</strong> The Workflow writes two records to D1 in a single transaction: (a) the feedback record in <code>resume_feedback</code> with <code>status = 'pending_review'</code>, and (b) the usage record in <code>ai_usage</code> with the action type, input hash, and timestamp. Because this is a Workflow step, if the write fails (D1 transient error), only this step retries — the AI call is not repeated.</li>
+            <li><strong>Step 6 — Admin Notification.</strong> The Workflow sends a transactional email via Resend to the admin notification address. The email includes the user's name, trade program, resume filename, and a direct link to the admin panel. If Resend is temporarily unavailable, the Workflow retries with backoff. The notification failure does not block the user response — the feedback record is already persisted.</li>
+            <li><strong>Response.</strong> The Workflow completes and the Worker returns a JSON response to the client indicating the feedback was generated and is pending review. The React frontend displays the "Pending Review" state. The user does NOT see the raw AI output until an admin approves it.</li>
+        </ol>
+
+        <h3>6.3.2 Interview Question Request Lifecycle</h3>
+        <p>When a user pastes a job description and clicks "Generate Interview Questions":</p>
+        <ol>
+            <li><strong>Client sends</strong> the job description text (truncated to 2,000 characters) and the <code>resume_id</code> to the <code>generate-questions</code> Worker endpoint with the Clerk JWT.</li>
+            <li><strong>Workflow Step 1 — Validation.</strong> Same quota and deduplication checks as the resume pipeline. Additionally validates that the job description meets the minimum length threshold (10 characters).</li>
+            <li><strong>Workflow Step 2 — Context Enrichment.</strong> Fetches resume metadata from D1. Builds a composite context string that combines the candidate's trade background with the target job description.</li>
+            <li><strong>Workflow Step 3 — AI Inference.</strong> Sends the structured request to OpenRouter with a prompt designed to generate categorised questions aligned to Bloom's Taxonomy levels: technical (Apply/Analyse), behavioural (Evaluate, STAR-formatted), and situational (Create/Evaluate). The tool-call schema forces the response into three string arrays.</li>
+            <li><strong>Workflow Step 4 — Normalisation and Persistence.</strong> Parses the response, validates array structure, writes the question set to <code>interview_questions</code>, and records AI usage in <code>ai_usage</code>. Both writes occur in a single D1 transaction.</li>
+            <li><strong>Response.</strong> Returns the generated questions directly to the client. Unlike resume feedback, interview questions do NOT pass through the admin approval gate — they are delivered immediately to the user. The rationale: interview questions are preparatory aids with low risk of harmful content, whereas resume scores directly affect user confidence and therefore require human review.</li>
+        </ol>
+
+        <h2>6.4 Why Each Service Was Chosen Over Alternatives</h2>
+
+        <table>
+            <tr><th>Decision</th><th>Chosen</th><th>Alternatives Considered</th><th>Rationale</th></tr>
+            <tr>
+                <td>Authentication</td>
+                <td><strong>Clerk</strong></td>
+                <td>Supabase Auth, Auth0, Firebase Auth, NextAuth</td>
+                <td>Clerk provides pre-built UI components (sign-in/sign-up modals), user management dashboard, webhook-driven lifecycle events, and native Cloudflare Workers SDK. Supabase Auth ties the project to the Supabase ecosystem. Auth0 and Firebase are over-provisioned for this use case and introduce vendor lock-in to AWS/GCP infrastructure respectively. NextAuth is framework-specific to Next.js.</td>
+            </tr>
+            <tr>
+                <td>Database</td>
+                <td><strong>Cloudflare D1</strong></td>
+                <td>Supabase PostgreSQL, PlanetScale, Turso, Neon</td>
+                <td>D1 runs inside the same Cloudflare edge network as Workers, eliminating cross-network database roundtrips. For the current data model (7 tables, thousands of rows), SQLite's query engine is more than adequate. PostgreSQL features like JSON operators, full-text search, and advanced indexing are unnecessary for this workload. D1 avoids the connection pooling complexity that every serverless-to-PostgreSQL integration must solve (PgBouncer, Neon's pooler, Supabase's pooler).</td>
+            </tr>
+            <tr>
+                <td>Object Storage</td>
+                <td><strong>Cloudflare R2</strong></td>
+                <td>AWS S3, Supabase Storage, Google Cloud Storage</td>
+                <td>R2 is S3-compatible (same API) with zero egress fees. Resume PDFs are written once and read occasionally — the egress-free model eliminates unpredictable storage costs. R2 is accessed from Workers without leaving the Cloudflare network.</td>
+            </tr>
+            <tr>
+                <td>Serverless Functions</td>
+                <td><strong>Cloudflare Workers</strong></td>
+                <td>AWS Lambda, Supabase Edge Functions (Deno), Vercel Functions</td>
+                <td>Workers provide sub-5ms cold starts (V8 isolates vs Lambda's 200ms-3s container boot). Workers are globally distributed by default (all 300+ Cloudflare locations) vs Lambda's single-region deployment. Workers' pricing (100K free requests/day) is the most competitive for a beta product. Supabase Edge Functions are Deno-based and locked to the Supabase ecosystem. Vercel Functions are tied to the Vercel deployment platform.</td>
+            </tr>
+            <tr>
+                <td>AI Provider</td>
+                <td><strong>OpenRouter</strong></td>
+                <td>Direct Anthropic API, Direct Google AI API, AWS Bedrock, Azure OpenAI</td>
+                <td>OpenRouter provides a unified API endpoint that can route to any of 200+ models from multiple providers. This means model selection is a configuration change, not a code change. If Gemini's quality degrades or pricing changes, the system switches to Claude or Llama by changing a model string. Direct provider APIs create hard vendor dependencies. AWS Bedrock and Azure OpenAI require AWS/Azure accounts and VPC configuration.</td>
+            </tr>
+            <tr>
+                <td>Email</td>
+                <td><strong>Resend</strong></td>
+                <td>SendGrid, AWS SES, Postmark, Mailgun</td>
+                <td>Resend provides a single-POST REST API callable from Workers. It supports React-based email templates (matching the frontend stack), includes delivery tracking, and handles SPF/DKIM/DMARC compliance. SendGrid and Mailgun have more complex setup and pricing. AWS SES requires AWS account infrastructure. Postmark is comparable but Resend's developer experience and pricing are optimised for early-stage products.</td>
+            </tr>
+        </table>
+
+        <h2>6.5 Logical System View</h2>
+
+        <div class="box">
+            <p><strong>User Request Path:</strong></p>
+            <p class="mono">User Browser → Clerk Auth (JWT) → Cloudflare Worker → Cloudflare Workflow → D1 (validation) → OpenRouter (AI inference) → D1 (persistence) → Resend (notification) → Response to Client</p>
+            <p style="margin-top: 12px;"><strong>Admin Request Path:</strong></p>
+            <p class="mono">Admin Browser → Clerk Auth (JWT + admin role) → Cloudflare Worker → D1 (query / update) → Resend (optional notification) → Response to Client</p>
+            <p style="margin-top: 12px;"><strong>Public Request Path:</strong></p>
+            <p class="mono">Visitor Browser → Cloudflare Worker (waitlist/contact) → D1 (insert) → Resend (confirmation email) → Response to Client</p>
+        </div>
+
+        <h2>6.6 Data Entities</h2>
+
+        <table>
+            <tr><th>Entity (D1 Table)</th><th>Purpose</th><th>Key Columns</th><th>Relationships</th></tr>
+            <tr>
+                <td><strong>users</strong></td>
+                <td>Synchronised user record from Clerk webhooks. Mirrors Clerk user data for local queries.</td>
+                <td>id (Clerk user ID), email, full_name, created_at, updated_at</td>
+                <td>Primary entity. Referenced by all user-scoped tables via user_id foreign key.</td>
+            </tr>
+            <tr>
+                <td><strong>resumes</strong></td>
+                <td>Canonical resume metadata. One active resume per user.</td>
+                <td>id, user_id, file_name, file_path (R2 key), file_size, file_hash (SHA-256), trade_program, created_at, updated_at</td>
+                <td>Belongs to users. Referenced by resume_feedback and interview_questions.</td>
+            </tr>
+            <tr>
+                <td><strong>resume_feedback</strong></td>
+                <td>AI-generated feedback with admin review lifecycle.</td>
+                <td>id, user_id, resume_id, resume_hash, status (pending_review | approved | rejected), overall_score (1-10), strengths (JSON array), improvements (JSON array), suggestions (JSON array), trade_suggestions (JSON array), actionable_steps (JSON array), reviewed_by, reviewed_at, created_at</td>
+                <td>Belongs to users and resumes. Status controlled by admin operations.</td>
+            </tr>
+            <tr>
+                <td><strong>interview_questions</strong></td>
+                <td>Persisted categorised question sets.</td>
+                <td>id, user_id, resume_id, job_description, technical (JSON array), behavioral (JSON array), situational (JSON array), created_at</td>
+                <td>Belongs to users. Optionally references resumes.</td>
+            </tr>
+            <tr>
+                <td><strong>ai_usage</strong></td>
+                <td>Quota tracking and input deduplication.</td>
+                <td>id, user_id, action_type (resume_feedback | interview_questions), input_hash (SHA-256), workflow_id, created_at</td>
+                <td>Belongs to users. Count determines quota remaining.</td>
+            </tr>
+            <tr>
+                <td><strong>user_roles</strong></td>
+                <td>Role-based access control. Synced from Clerk organisation roles or manually managed.</td>
+                <td>id, user_id, role (admin | user), granted_at, granted_by</td>
+                <td>Belongs to users. Queried by Worker middleware to gate admin operations.</td>
+            </tr>
+            <tr>
+                <td><strong>trade_grad_waitlist</strong></td>
+                <td>Candidate market interest capture (public, no auth required).</td>
+                <td>id, full_name, email, trade_program, state, city, consent, created_at</td>
+                <td>Standalone entity. Not linked to users (pre-registration).</td>
+            </tr>
+            <tr>
+                <td><strong>employer_waitlist</strong></td>
+                <td>Employer market interest capture (public, no auth required).</td>
+                <td>id, full_name, job_title, company_email, trades_hiring_for, hiring_volume, state, city, consent, created_at</td>
+                <td>Standalone entity. Not linked to users (pre-registration).</td>
+            </tr>
+        </table>
+
+        <h2>6.7 AI Usage Policy Logic</h2>
+
+        <table>
+            <tr><th>Rule</th><th>Implementation</th><th>Rationale</th></tr>
+            <tr>
+                <td><strong>Quota</strong></td>
+                <td>Each user is limited to 3 AI actions during the beta period. Enforced by counting records in <code>ai_usage</code> WHERE <code>user_id</code> matches. The limit is defined as a Worker environment variable (<code>MAX_AI_ACTIONS</code>) so it can be adjusted without code deployment.</td>
+                <td>Controls cost during beta (each AI call costs $0.001-0.01 via OpenRouter). Prevents abuse. Creates urgency for the user to submit meaningful input rather than spamming the system.</td>
+            </tr>
+            <tr>
+                <td><strong>Deduplication</strong></td>
+                <td>Before any AI call, the Workflow computes a SHA-256 hash of <code>action_type + input_content</code> and checks if that hash already exists in <code>ai_usage.input_hash</code>. If a match is found, the request is rejected with a clear message ("You have already generated feedback for this resume" or "You have already generated questions for this job description").</td>
+                <td>Prevents users from burning quota on identical requests. Prevents duplicate AI charges. Ensures each AI action produces genuinely new output.</td>
+            </tr>
+            <tr>
+                <td><strong>Visibility</strong></td>
+                <td>The dashboard displays remaining AI actions as <code>MAX_AI_ACTIONS - count(ai_usage WHERE user_id = current_user)</code>. The count is fetched via a lightweight D1 query on dashboard load.</td>
+                <td>Users must understand their remaining budget before committing to an AI action. Transparency prevents frustration.</td>
+            </tr>
+            <tr>
+                <td><strong>Durability</strong></td>
+                <td>AI usage records are written in the same D1 transaction as the output record (feedback or questions). If the transaction fails, neither the output nor the usage is recorded — maintaining consistency.</td>
+                <td>Prevents the failure mode where a user's quota is decremented but no output is produced, or where output is produced but the quota is not decremented (allowing infinite free usage).</td>
+            </tr>
+        </table>
+
+        <h2>6.8 Cloudflare Workflows: Why Durable Multi-Step Execution Matters</h2>
+
+        <p>The AI pipelines are not simple request-response operations. They are multi-step workflows where each step can independently fail, and failure at step N should not repeat steps 1 through N-1. Cloudflare Workflows solve this problem with <strong>durable execution</strong>.</p>
+
+        <h3>What Durable Execution Means in Practice</h3>
+        <p>When a Cloudflare Workflow executes, each step is persisted to Cloudflare's infrastructure. If the Worker instance is recycled, the machine restarts, or the process crashes, the Workflow engine resumes execution from the last completed step — not from the beginning. This is fundamentally different from a single Worker function where a crash means starting over.</p>
+
+        <h3>Why This Matters for AI Pipelines</h3>
+        <ul>
+            <li><strong>AI calls are expensive and slow.</strong> An OpenRouter call to Gemini Flash takes 2-5 seconds and costs money. If the database write after the AI call fails (transient D1 error), a simple Worker would need to re-invoke the AI — doubling the cost and latency. A Workflow retries only the failed database step.</li>
+            <li><strong>Email delivery is unreliable.</strong> Resend might be temporarily unavailable. In a simple Worker, this would either block the response (bad UX) or silently fail (admin never learns about the submission). A Workflow treats email as a separate step that retries independently without affecting the user response.</li>
+            <li><strong>Partial state is dangerous.</strong> If the AI usage record is written but the feedback record is not (because the Worker crashed between two writes), the user loses a quota slot without receiving output. Workflows ensure step atomicity — either the persistence step completes fully, or it retries fully.</li>
+        </ul>
+
+        <h3>Workflow Configuration</h3>
+        <table>
+            <tr><th>Parameter</th><th>Value</th><th>Rationale</th></tr>
+            <tr><td>Max step retries</td><td>3</td><td>Balances reliability against cost. 3 retries covers transient network errors and rate limits without running up AI costs on persistent failures.</td></tr>
+            <tr><td>Retry backoff</td><td>Exponential (1s, 4s, 16s)</td><td>Allows transient rate limits (429 responses) to clear before retry. Avoids hammering a struggling service.</td></tr>
+            <tr><td>Workflow timeout</td><td>60 seconds</td><td>AI calls take 2-8 seconds. Database writes take <100ms. Email takes <500ms. 60 seconds provides generous margin for the full pipeline with retries.</td></tr>
+            <tr><td>Idempotency key</td><td>user_id + resume_hash (feedback) or user_id + job_description_hash (questions)</td><td>Prevents duplicate workflow executions if the client retries a request (network timeout, user double-clicks).</td></tr>
+        </table>
+    </section>
+
+    <section class="content page-break">
+        <h1>7. AI Methodology and Pipeline Framework</h1>
+
+        <p>This section documents the intellectual framework, prompt engineering methodology, and operational pipeline that govern how Kraftworks generates AI outputs. The goal is to ensure that every AI-generated artefact — whether a resume score, a set of interview questions, or a trade-specific suggestion — is produced through a systematic, research-grounded methodology that is consistent, auditable, and improvable over time.</p>
+
+        <h2>7.1 Why a Methodology Matters</h2>
+
+        <p>AI-generated content without a methodology is unpredictable. Two users with similar resumes might receive wildly different scores. Interview questions might be generic rather than trade-specific. Feedback might praise irrelevant capabilities while ignoring critical gaps. A methodology solves this by establishing:</p>
+        <ul>
+            <li><strong>Consistency.</strong> Every user receives output that follows the same evaluation criteria, scoring rubric, and question taxonomy — regardless of which LLM model processes their request.</li>
+            <li><strong>Explainability.</strong> When a user asks "why did I get a 6/10?", the system can point to specific rubric anchors and competency dimensions rather than saying "the AI decided."</li>
+            <li><strong>Improvability.</strong> Because the methodology is documented and modular, individual components (the rubric, the question taxonomy, the prompt structure) can be tested, measured, and improved independently.</li>
+            <li><strong>Credibility.</strong> The methodology is grounded in established research from educational psychology, industrial-organisational psychology, and occupational classification — not ad hoc prompt engineering.</li>
+        </ul>
+
+        <h2>7.2 Foundational Research Frameworks</h2>
+
+        <p>The Kraftworks AI system draws from the following established frameworks. Each framework maps to a specific component of the pipeline, not as abstract theory but as a concrete design input that shapes how the AI prompt is constructed, how output is structured, and how quality is evaluated.</p>
+
+        <table>
+            <tr><th>Framework</th><th>Source</th><th>Application in Kraftworks</th></tr>
+            <tr>
+                <td><strong>Bloom's Revised Taxonomy</strong></td>
+                <td>Anderson &amp; Krathwohl (2001). A Taxonomy for Learning, Teaching, and Assessing.</td>
+                <td><strong>Interview question categorisation.</strong> Bloom's taxonomy classifies cognitive demand across six levels: Remember, Understand, Apply, Analyse, Evaluate, Create. Kraftworks maps its three question categories to specific Bloom's levels: Technical questions target Apply and Analyse (can the candidate apply trade knowledge to practical scenarios?). Behavioural questions target Evaluate (can the candidate assess their own past performance and decisions?). Situational questions target Create and Evaluate (can the candidate synthesise a response to a novel, hypothetical scenario?). This mapping is embedded in the system prompt as an instruction to the LLM, ensuring questions are calibrated to the appropriate cognitive demand — not randomly generated.</td>
+            </tr>
+            <tr>
+                <td><strong>STAR Method</strong></td>
+                <td>Janz (1982) — initial structured interview research. Refined as an industry-standard behavioural interview technique.</td>
+                <td><strong>Behavioural question design.</strong> The STAR method (Situation, Task, Action, Result) is the gold standard for behavioural interview questions because it produces specific, evidence-based responses rather than hypothetical generalisations. The Kraftworks system prompt instructs the LLM to formulate behavioural questions that naturally elicit STAR-structured answers — for example, "Tell me about a time you identified a safety hazard on a jobsite. What was the situation, what did you do, and what was the result?" rather than a vague "How do you handle safety?"</td>
+            </tr>
+            <tr>
+                <td><strong>Competency-Based Interview (CBI) Framework</strong></td>
+                <td>Campion, Palmer &amp; Campion (1997). A review of structure in the selection interview. Personnel Psychology, 50(3).</td>
+                <td><strong>Job-description-to-competency mapping.</strong> CBI research demonstrates that interview effectiveness increases when questions are mapped to specific, job-relevant competencies rather than generic traits. The Kraftworks prompt pipeline takes the user's submitted job description and instructs the LLM to identify the implicit competency domains (technical skill, safety awareness, teamwork, problem-solving, tool proficiency, code compliance) before generating questions. This ensures that a job description for a commercial electrician produces different questions than one for a residential HVAC technician, even though both are "trades" roles.</td>
+            </tr>
+            <tr>
+                <td><strong>O*NET Content Model</strong></td>
+                <td>US Department of Labor. Occupational Information Network — standardised descriptors for 1,000+ occupations.</td>
+                <td><strong>Trade-context enrichment.</strong> O*NET provides structured descriptions of the knowledge, skills, abilities, and work context for specific occupations — including electricians, HVAC mechanics, and welders. The Kraftworks system prompt incorporates O*NET-aligned language to ground the LLM in trade-specific expectations. For example, when generating feedback for a welder's resume, the prompt references O*NET descriptors for welding occupations: "blueprint reading, joint preparation, positional welding, AWS certification standards, safety equipment operation." This prevents the LLM from defaulting to generic corporate resume advice that is irrelevant to a trades professional.</td>
+            </tr>
+            <tr>
+                <td><strong>NACE Career Readiness Competencies</strong></td>
+                <td>National Association of Colleges and Employers (2021 revision). Eight competencies: Critical Thinking, Communication, Teamwork, Technology, Leadership, Professionalism, Career &amp; Self-Development, Equity &amp; Inclusion.</td>
+                <td><strong>Resume scoring rubric dimensions.</strong> The resume feedback system evaluates resumes against observable signals that map to NACE competencies. A score of 8/10 requires evidence of multiple NACE competency signals: clear communication (resume structure and language), technology proficiency (tool and software literacy), professionalism (formatting, completeness), and career development awareness (certifications, continuing education). The scoring rubric anchors (Section 7.5) are calibrated against these competency dimensions.</td>
+            </tr>
+            <tr>
+                <td><strong>Rubric-Anchored Evaluation</strong></td>
+                <td>Brookhart (2013). How to Create and Use Rubrics for Formative Assessment and Grading.</td>
+                <td><strong>Resume score consistency.</strong> Educational assessment research shows that human evaluators produce more consistent scores when they use rubrics with explicit anchors for each score level, rather than holistic impression scoring. The Kraftworks AI scoring prompt includes explicit descriptors for each score band (1-3 Weak, 4-6 Adequate, 7-9 Strong, 10 Exceptional) with concrete signals for each band. This reduces the variance in AI-generated scores across different prompts and models.</td>
+            </tr>
+            <tr>
+                <td><strong>Human-in-the-Loop (HITL) Validation</strong></td>
+                <td>Amershi et al. (2019). Guidelines for Human-AI Interaction. CHI '19. Microsoft Research.</td>
+                <td><strong>Admin approval gate for resume feedback.</strong> Research on human-AI interaction establishes that AI systems producing consequential outputs (outputs that affect user decisions, confidence, or actions) should include a human verification step before delivery. Resume scores directly influence a trade worker's confidence and career decisions. The Kraftworks HITL model ensures that every AI-generated resume feedback passes through an admin reviewer who can approve, edit, or reject the output before the user sees it. This catches hallucinated feedback, inappropriate scores, and off-domain advice.</td>
+            </tr>
+            <tr>
+                <td><strong>Chain-of-Thought Prompting</strong></td>
+                <td>Wei et al. (2022). Chain-of-Thought Prompting Elicits Reasoning in Large Language Models. NeurIPS 2022.</td>
+                <td><strong>Internal reasoning before output.</strong> Research shows that instructing LLMs to reason step-by-step before producing a final answer improves accuracy, especially for multi-dimensional evaluation tasks. The Kraftworks resume scoring prompt instructs the model to internally assess the resume against each rubric dimension before computing the final score — rather than generating a score first and then rationalising it. This is implemented as a thinking instruction in the system prompt, not as a visible output to the user.</td>
+            </tr>
+            <tr>
+                <td><strong>Structured Output / Constrained Decoding</strong></td>
+                <td>Industry-standard pattern since OpenAI function-calling (2023). Adopted by Anthropic (tool use), Google (function calling), Meta (structured output).</td>
+                <td><strong>Deterministic output schema.</strong> Both Kraftworks pipelines use forced tool-call output with strict JSON schemas and <code>additionalProperties: false</code>. The LLM cannot return free-form text — it must produce a machine-parseable JSON object that matches the defined schema exactly. This eliminates the entire class of problems where AI output is "almost right but can't be reliably parsed" — a problem that plagues prompt-and-parse approaches.</td>
+            </tr>
+            <tr>
+                <td><strong>Role-Anchored Prompting</strong></td>
+                <td>Shanahan et al. (2023). Role play with large language models. Nature, 623.</td>
+                <td><strong>Trade-specific persona grounding.</strong> Research on LLM role-play demonstrates that assigning an explicit persona ("You are a career coach specialising in skilled trades") measurably improves output relevance and reduces off-domain drift compared to generic instructions. Every Kraftworks prompt opens with a role declaration that anchors the model in the trades career coaching domain.</td>
+            </tr>
+        </table>
+
+        <h2>7.3 The Prompt Engineering Architecture: ICIO + Role-Anchoring</h2>
+
+        <p>Every AI prompt in Kraftworks follows a four-layer architecture called <strong>ICIO</strong> (Instruction, Context, Input, Output), overlaid with Role-Anchoring. This is not a loose guideline — it is a structural template that every prompt must follow. Understanding each layer explains why the AI produces the outputs it does.</p>
+
+        <table>
+            <tr><th>Layer</th><th>Purpose</th><th>Implementation in Resume Feedback</th><th>Implementation in Interview Questions</th></tr>
+            <tr>
+                <td><strong>Role Anchor</strong></td>
+                <td>Establish the LLM's persona and domain expertise. Constrains the model's response space to trade-relevant career coaching.</td>
+                <td>"You are a senior career coach specialising in skilled trades professionals (HVAC technicians, electricians, welders, plumbers, carpenters). You evaluate resumes against industry hiring standards for blue-collar and certification-heavy roles."</td>
+                <td>"You are a senior career coach specialising in skilled trades. You prepare candidates for trade-specific interviews by generating questions that test practical knowledge, workplace behaviour, and adaptive problem-solving for field-based roles."</td>
+            </tr>
+            <tr>
+                <td><strong>I — Instruction</strong></td>
+                <td>Define the task precisely, including output cardinality, tone, and evaluation criteria.</td>
+                <td>"Analyse the submitted resume and provide structured feedback. Score on a 1-10 scale using the provided rubric anchors. Generate 3-4 bullet points per category. Each bullet should be concise (1-2 sentences), specific, and actionable. Do not use generic advice — reference the candidate's trade specialisation."</td>
+                <td>"Generate 3-4 interview questions per category. Each question must be specific to the job description provided. Technical questions should test applied knowledge. Behavioural questions should elicit STAR-structured responses. Situational questions should present hypothetical trade scenarios."</td>
+            </tr>
+            <tr>
+                <td><strong>C — Context</strong></td>
+                <td>Inject domain-specific grounding: trade vertical, resume metadata, candidate context.</td>
+                <td>Dynamic: "The candidate specialises in [HVAC/Electrical/Welding]. Resume file: [filename.pdf]. O*NET reference: [trade-specific descriptors for the candidate's specialisation]."</td>
+                <td>Dynamic: "The candidate has uploaded a resume: [filename.pdf]. The target job description follows. Identify the implicit competency domains (technical skill, safety, teamwork, tools, compliance) from the job description before generating questions."</td>
+            </tr>
+            <tr>
+                <td><strong>I — Input</strong></td>
+                <td>The user-supplied content that the model must reason about.</td>
+                <td>Resume metadata (file name, trade program). In v2: extracted resume text content.</td>
+                <td>Job description text (truncated to 2,000 characters for cost and relevance control).</td>
+            </tr>
+            <tr>
+                <td><strong>O — Output</strong></td>
+                <td>Strict structured schema enforced through OpenRouter's tool-calling / function-calling capability.</td>
+                <td>Forced tool call: <code>return_feedback</code> with schema: <code>{ overall_score: integer, strengths: string[], improvements: string[], suggestions: string[], trade_suggestions: string[], actionable_steps: string[] }</code>. <code>additionalProperties: false</code>. Model cannot deviate from this structure.</td>
+                <td>Forced tool call: <code>return_questions</code> with schema: <code>{ technical: string[], behavioral: string[], situational: string[] }</code>. <code>additionalProperties: false</code>.</td>
+            </tr>
+        </table>
+
+        <h3>Why ICIO Rather Than Free-Form Prompting</h3>
+        <p>Free-form prompting (writing a long natural-language paragraph and hoping the AI follows it) produces inconsistent results because the model must simultaneously infer the task, the context, the format, and the constraints from unstructured text. ICIO separates these concerns into distinct layers, which means:</p>
+        <ul>
+            <li>Each layer can be <strong>tested independently</strong>. If the scores are inconsistent, the problem is in the Instruction layer (rubric anchors) or the Output layer (schema constraints) — not in the Context or Input.</li>
+            <li>Each layer can be <strong>improved independently</strong>. Adding O*NET descriptors to the Context layer improves trade-relevance without changing the scoring Instruction. Adding Chain-of-Thought to the Instruction layer improves reasoning without changing the Output schema.</li>
+            <li>The architecture is <strong>model-portable</strong>. Because the prompt follows a standard structure, switching from Gemini to Claude or Llama requires zero prompt restructuring — only model-specific tuning of the Instruction layer (e.g., Claude responds better to XML-tagged instructions, Gemini responds better to numbered lists).</li>
+        </ul>
+
+        <h2>7.4 Pipeline 1: Resume Scoring and Feedback</h2>
+
+        <p>The resume feedback pipeline is a six-stage durable workflow that transforms a raw PDF upload into structured, human-reviewed career feedback. Each stage is a discrete Cloudflare Workflow step with independent retry capability.</p>
+
+        <h3>Stage 1 — Input Validation</h3>
+        <p>The Workflow receives the <code>resume_id</code> and the authenticated <code>user_id</code> from the Clerk JWT. It performs three validation checks against Cloudflare D1:</p>
+        <ul>
+            <li><strong>Ownership check:</strong> SELECT from <code>resumes</code> WHERE <code>id = resume_id AND user_id = authenticated_user_id</code>. If no match, reject with "Resume not found."</li>
+            <li><strong>Quota check:</strong> SELECT COUNT(*) from <code>ai_usage</code> WHERE <code>user_id = authenticated_user_id</code>. If count ≥ <code>MAX_AI_ACTIONS</code>, reject with "You have used all your AI actions for the beta period."</li>
+            <li><strong>Deduplication check:</strong> Compute SHA-256 hash of <code>"resume_feedback:" + resume_hash</code>. SELECT from <code>ai_usage</code> WHERE <code>input_hash = computed_hash</code>. If found, reject with "You have already generated feedback for this resume version. Upload a new resume to generate new feedback."</li>
+        </ul>
+        <p>If all three checks pass, the Workflow advances to Stage 2. If any check fails, the Workflow terminates immediately — no AI cost incurred, no database state changed.</p>
+
+        <h3>Stage 2 — Context Enrichment</h3>
+        <p>The Workflow fetches the resume record from D1 to extract <code>file_name</code> and <code>trade_program</code>. The trade program is mapped to an O*NET-aligned context string:</p>
+        <ul>
+            <li><strong>HVAC:</strong> "The candidate specialises in HVAC and refrigeration. Relevant industry expectations include: EPA 608 certification, refrigerant handling, system diagnostics, load calculations, ductwork design, preventive maintenance scheduling, ASHRAE standards awareness."</li>
+            <li><strong>Electrical:</strong> "The candidate specialises in electrical technology. Relevant industry expectations include: NEC code compliance, conduit bending, circuit analysis, motor controls, PLC fundamentals, lockout/tagout procedures, journeyman or master electrician licensure."</li>
+            <li><strong>Welding:</strong> "The candidate specialises in welding technology. Relevant industry expectations include: AWS certification (D1.1 structural, D1.2 aluminium), blueprint reading, joint preparation, positional welding (all positions), MIG/TIG/stick processes, metallurgy basics, weld inspection."</li>
+        </ul>
+        <p>In v2, this stage will also retrieve the resume PDF from R2 and extract text content using a PDF parsing library, providing the LLM with the actual resume text rather than just metadata.</p>
+
+        <h3>Stage 3 — AI Inference via OpenRouter</h3>
+        <p>The Workflow sends a structured request to OpenRouter's chat completions endpoint. The request is constructed as follows:</p>
+        <ul>
+            <li><strong>Endpoint:</strong> <code>https://openrouter.ai/api/v1/chat/completions</code></li>
+            <li><strong>Model selection:</strong> Configured via Worker environment variable. Default: <code>google/gemini-2.5-flash</code> for cost efficiency ($0.15/1M input tokens). Fallback: <code>anthropic/claude-3.5-haiku</code> ($0.80/1M input). Premium option: <code>anthropic/claude-sonnet-4</code> ($3.00/1M input) for cases requiring higher analytical depth.</li>
+            <li><strong>System message:</strong> Contains the Role Anchor + Instruction + Context layers from the ICIO architecture.</li>
+            <li><strong>User message:</strong> Contains the Input layer — resume metadata and (in v2) extracted resume text.</li>
+            <li><strong>Tool definition:</strong> The <code>return_feedback</code> function with strict schema.</li>
+            <li><strong>Tool choice:</strong> <code>{ "type": "function", "function": { "name": "return_feedback" } }</code> — forcing the model to use the structured output tool.</li>
+            <li><strong>Temperature:</strong> 0.3 — low enough for scoring consistency, high enough to avoid repetitive language across different resumes.</li>
+        </ul>
+        <p>If OpenRouter returns a 429 (rate limit), the Workflow step retries with exponential backoff. If OpenRouter returns a 5xx error, the step retries up to 3 times. If all retries fail, the Workflow terminates with a user-readable error and no database state is changed.</p>
+
+        <h3>Stage 4 — Output Normalisation</h3>
+        <p>The Workflow parses the <code>tool_calls[0].function.arguments</code> JSON string from the AI response. It performs the following normalisations:</p>
+        <ul>
+            <li><strong>Score clamping:</strong> <code>overall_score</code> is clamped to the integer range [1, 10]. Values outside this range are adjusted to the nearest boundary.</li>
+            <li><strong>Array validation:</strong> Each array field (<code>strengths</code>, <code>improvements</code>, <code>suggestions</code>, <code>trade_suggestions</code>, <code>actionable_steps</code>) is verified to be a non-empty array of strings. Empty arrays trigger a retry of Stage 3.</li>
+            <li><strong>Content sanitisation:</strong> String values are trimmed of leading/trailing whitespace, and any embedded HTML or markdown formatting is stripped to ensure clean display in the frontend.</li>
+        </ul>
+
+        <h3>Stage 5 — Persistence</h3>
+        <p>The Workflow executes a D1 transaction that atomically writes two records:</p>
+        <ul>
+            <li><strong>resume_feedback record:</strong> All normalised fields plus <code>status = 'pending_review'</code>, <code>user_id</code>, <code>resume_id</code>, <code>resume_hash</code>, and <code>created_at</code>.</li>
+            <li><strong>ai_usage record:</strong> <code>user_id</code>, <code>action_type = 'resume_feedback'</code>, <code>input_hash</code> (the SHA-256 deduplication key), <code>workflow_id</code>, and <code>created_at</code>.</li>
+        </ul>
+        <p>Because these two writes are in a single D1 transaction, either both succeed or neither does. This prevents the failure mode where quota is consumed but no feedback is stored, or where feedback is stored but quota is not recorded (allowing unlimited free usage).</p>
+
+        <h3>Stage 6 — Admin Notification via Resend</h3>
+        <p>The Workflow sends a transactional email to the admin notification address via Resend's REST API:</p>
+        <ul>
+            <li><strong>Recipient:</strong> Admin email address (configured as Worker environment variable).</li>
+            <li><strong>Subject:</strong> "New Resume Feedback Pending Review — [User Name]"</li>
+            <li><strong>Body:</strong> User name, email, trade program, resume filename, submission timestamp, and a direct link to the admin panel feedback tab.</li>
+            <li><strong>Failure handling:</strong> Notification failure does not block the user response. The feedback record is already persisted. If Resend is unavailable, the step retries up to 3 times, then logs the failure for operational review.</li>
+        </ul>
+
+        <h2>7.5 Resume Scoring Rubric Anchors</h2>
+
+        <p>The AI scoring prompt includes explicit descriptors for each score band. These anchors are based on rubric-anchored evaluation principles (Brookhart, 2013) and calibrated against NACE Career Readiness Competencies.</p>
+
+        <table>
+            <tr><th>Score Band</th><th>Label</th><th>Descriptor</th><th>Observable Signals</th></tr>
+            <tr>
+                <td>1 — 3</td>
+                <td><strong>Weak</strong></td>
+                <td>Resume lacks fundamental structure. No evident trade relevance. Missing essential information (contact details, work history, or education). Formatting is unprofessional or illegible.</td>
+                <td>No trade-specific keywords. No certifications mentioned. Generic objective statement or none. Poor grammar. No quantified achievements. Layout is inconsistent or uses inappropriate fonts/colours.</td>
+            </tr>
+            <tr>
+                <td>4 — 6</td>
+                <td><strong>Adequate</strong></td>
+                <td>Resume meets basic structural expectations but lacks specificity. Contains work history and education but does not demonstrate trade depth. Certifications may be mentioned but not prominently positioned. Achievements are described but not quantified.</td>
+                <td>Some trade terminology present. At least one certification mentioned. Work history includes job titles and dates but lacks specific accomplishments. Resume is readable but would not stand out in a competitive application pool.</td>
+            </tr>
+            <tr>
+                <td>7 — 9</td>
+                <td><strong>Strong</strong></td>
+                <td>Resume demonstrates clear trade identity with relevant certifications, quantified accomplishments, and a professional narrative. ATS-compatible formatting. Trade-specific skills are prominently featured. Work history tells a progression story.</td>
+                <td>Multiple trade certifications prominently listed. Quantified achievements (e.g., "maintained 200+ HVAC units," "completed 47 residential rewires"). Industry-standard keywords present. Professional summary is trade-focused. Formatting is clean and ATS-parseable.</td>
+            </tr>
+            <tr>
+                <td>10</td>
+                <td><strong>Exceptional</strong></td>
+                <td>Resume is optimally structured for both ATS parsing and human review. Strong trade identity with measurable outcomes, comprehensive certification coverage, and a compelling professional narrative that positions the candidate as a standout hire.</td>
+                <td>All signals from the 7-9 band, plus: leadership or mentorship evidence, advanced certifications, continuing education commitment, specific safety record or compliance achievements, and a professional summary that reads as a confident value proposition rather than a job description.</td>
+            </tr>
+        </table>
+
+        <h2>7.6 Pipeline 2: Interview Question Generation</h2>
+
+        <p>The interview question pipeline is a five-stage Cloudflare Workflow that transforms a job description into categorised, trade-relevant interview preparation questions.</p>
+
+        <h3>Stage 1 — Input Validation</h3>
+        <p>Same authentication, quota, and deduplication checks as the resume pipeline. Additionally validates that the job description meets the minimum length threshold (10 characters) and truncates to 2,000 characters for cost control and prompt relevance.</p>
+
+        <h3>Stage 2 — Context Enrichment</h3>
+        <p>Fetches resume metadata from D1 if a <code>resume_id</code> is provided. Builds a composite context string that combines the candidate's trade background with the target job description. The prompt instructs the LLM to perform implicit competency mapping: identify the job's required competencies (technical skill, safety awareness, teamwork, tool proficiency, code compliance) before generating questions.</p>
+
+        <h3>Stage 3 — AI Inference via OpenRouter</h3>
+        <p>The request is structured identically to the resume pipeline but with a different system prompt, user prompt, and tool schema. Key differences:</p>
+        <ul>
+            <li><strong>Model:</strong> Default <code>google/gemini-2.5-flash</code>. Question generation is less analytically demanding than resume scoring, so the cost-efficient model is preferred.</li>
+            <li><strong>Temperature:</strong> 0.5 — slightly higher than resume scoring to encourage varied question phrasing across multiple generations.</li>
+            <li><strong>Tool schema:</strong> <code>return_questions</code> with <code>{ technical: string[], behavioral: string[], situational: string[] }</code>.</li>
+            <li><strong>Bloom's alignment instruction:</strong> The system prompt explicitly instructs: "Technical questions should test at the Apply and Analyse levels of Bloom's Taxonomy. Behavioural questions should target the Evaluate level and be structured to elicit STAR-method responses. Situational questions should target Create and Evaluate levels with hypothetical trade-specific scenarios."</li>
+        </ul>
+
+        <h3>Stage 4 — Normalisation and Persistence</h3>
+        <p>Parses the tool-call response, validates that all three arrays are present and non-empty, writes the question set to <code>interview_questions</code>, and records AI usage in <code>ai_usage</code> — both in a single D1 transaction.</p>
+
+        <h3>Stage 5 — Response</h3>
+        <p>Returns the generated questions directly to the client. Interview questions do NOT pass through the admin approval gate. The rationale: questions are preparatory aids that help users practice. They do not carry the same risk as resume scores (which directly affect confidence and career decisions). The cost of false negatives (blocking a useful question behind a review queue) outweighs the risk of false positives (a slightly imperfect question reaching the user).</p>
+
+        <h2>7.7 Question Category Design: Bloom's Taxonomy Alignment</h2>
+
+        <table>
+            <tr><th>Category</th><th>Bloom's Level</th><th>Design Intent</th><th>Example Pattern</th><th>What It Tests</th></tr>
+            <tr>
+                <td><strong>Technical</strong></td>
+                <td>Apply / Analyse</td>
+                <td>Assess whether the candidate can apply domain knowledge to practical trade scenarios and analyse system behaviours.</td>
+                <td>"Describe how you would troubleshoot a [specific system] when [specific symptom] occurs on a commercial jobsite."</td>
+                <td>Trade-specific knowledge, diagnostic reasoning, standards compliance, tool proficiency.</td>
+            </tr>
+            <tr>
+                <td><strong>Behavioural</strong></td>
+                <td>Evaluate</td>
+                <td>Elicit STAR-structured past experiences that demonstrate competency under real conditions.</td>
+                <td>"Tell me about a time you identified a safety hazard that others had overlooked. What was the situation, what did you do, and what was the result?"</td>
+                <td>Self-awareness, decision quality, teamwork, safety consciousness, communication under pressure.</td>
+            </tr>
+            <tr>
+                <td><strong>Situational</strong></td>
+                <td>Create / Evaluate</td>
+                <td>Test decision-making and adaptive reasoning in hypothetical job-relevant scenarios.</td>
+                <td>"If you arrived at a commercial site and discovered that the electrical panel layout did not match the submitted blueprints, what steps would you take before starting work?"</td>
+                <td>Adaptive reasoning, safety-first decision-making, communication with supervisors, regulatory awareness.</td>
+            </tr>
+        </table>
+
+        <h2>7.8 OpenRouter Integration Contract</h2>
+
+        <p>OpenRouter provides the unified API layer between Kraftworks and the underlying LLM providers. This section documents the exact integration contract.</p>
+
+        <table>
+            <tr><th>Parameter</th><th>Value</th><th>Rationale</th></tr>
+            <tr><td>API Endpoint</td><td><code>https://openrouter.ai/api/v1/chat/completions</code></td><td>OpenAI-compatible endpoint. Works with any client library designed for OpenAI's API format.</td></tr>
+            <tr><td>Authentication</td><td>Bearer token via <code>Authorization: Bearer $OPENROUTER_API_KEY</code> header.</td><td>Single API key for all model providers.</td></tr>
+            <tr><td>Primary Model (Resume)</td><td><code>google/gemini-2.5-flash</code></td><td>Best cost-to-quality ratio for structured evaluation tasks. $0.15/1M input tokens.</td></tr>
+            <tr><td>Primary Model (Questions)</td><td><code>google/gemini-2.5-flash</code></td><td>Same model for consistency. Question generation is less demanding than scoring.</td></tr>
+            <tr><td>Fallback Model</td><td><code>anthropic/claude-3.5-haiku</code></td><td>Used when primary model returns errors or when A/B testing quality. $0.80/1M input tokens.</td></tr>
+            <tr><td>Premium Model (optional)</td><td><code>anthropic/claude-sonnet-4</code></td><td>Available for cases requiring higher analytical depth. $3.00/1M input tokens. Activated by admin configuration, not user-selectable.</td></tr>
+            <tr><td>Response Format</td><td>Tool calling / function calling with <code>tool_choice: { type: "function" }</code></td><td>Forces structured JSON output via the provider's native tool-calling mechanism. Eliminates free-form text parsing.</td></tr>
+            <tr><td>Timeout</td><td>30 seconds per inference call.</td><td>LLM calls typically complete in 2-8 seconds. 30-second timeout accommodates slow responses without hanging indefinitely.</td></tr>
+            <tr><td>Error Handling</td><td>429 → retry with backoff. 402 → surface "credits exhausted" to user. 5xx → retry 3x then fail gracefully.</td><td>Prevents user-facing errors for transient provider issues. Surfaces permanent errors clearly.</td></tr>
+        </table>
+
+        <h2>7.9 Quality and Governance Controls</h2>
+
+        <table>
+            <tr><th>Control</th><th>Mechanism</th><th>What It Prevents</th></tr>
+            <tr>
+                <td><strong>Structured Output Enforcement</strong></td>
+                <td>Forced <code>tool_choice</code> with strict JSON schema and <code>additionalProperties: false</code>.</td>
+                <td>Prevents free-form text responses that cannot be reliably parsed. Ensures every response contains all required fields in the correct types.</td>
+            </tr>
+            <tr>
+                <td><strong>Human-in-the-Loop Review</strong></td>
+                <td>Resume feedback is persisted as <code>pending_review</code> and requires admin approval before user visibility.</td>
+                <td>Prevents hallucinated feedback, inappropriate scores, off-domain advice, or harmful content from reaching the end user without human verification.</td>
+            </tr>
+            <tr>
+                <td><strong>Quota Enforcement</strong></td>
+                <td>Max 3 AI actions per user, enforced at the Workflow level before the AI call is made.</td>
+                <td>Controls cost during beta. Prevents abuse. Ensures fair access across all users.</td>
+            </tr>
+            <tr>
+                <td><strong>Input Deduplication</strong></td>
+                <td>SHA-256 hash of (action_type + input content) checked against <code>ai_usage.input_hash</code>.</td>
+                <td>Prevents duplicate AI charges for identical inputs. Prevents users from wasting quota on repeated submissions.</td>
+            </tr>
+            <tr>
+                <td><strong>Input Boundary Control</strong></td>
+                <td>Job descriptions truncated to 2,000 characters. Minimum 10-character threshold.</td>
+                <td>Controls AI inference cost (longer inputs = higher token cost). Prevents trivial or empty submissions. Mitigates prompt injection by limiting input surface area.</td>
+            </tr>
+            <tr>
+                <td><strong>Trade-Domain Grounding</strong></td>
+                <td>Every prompt is anchored to the trades vertical with O*NET-aligned context injection and a trades-specific role persona.</td>
+                <td>Prevents generic corporate career advice that is irrelevant to a welder or HVAC technician. Reduces hallucination by narrowing the model's generative space to a specific domain.</td>
+            </tr>
+            <tr>
+                <td><strong>Transactional Persistence</strong></td>
+                <td>Output records and usage records are written in a single D1 transaction.</td>
+                <td>Prevents the state inconsistency where quota is consumed but no output is stored, or where output is stored but quota is not decremented.</td>
+            </tr>
+            <tr>
+                <td><strong>Durable Retry</strong></td>
+                <td>Cloudflare Workflows retry individual failed steps without re-executing completed steps.</td>
+                <td>Prevents duplicate AI charges on retry. Prevents duplicate database writes. Ensures the pipeline either completes fully or fails cleanly.</td>
+            </tr>
+            <tr>
+                <td><strong>Fail-Safe Error Handling</strong></td>
+                <td>429 → user-readable rate limit. 402 → credit exhaustion. 5xx → generic safe error. No partial state mutation on terminal failure.</td>
+                <td>Prevents confusing or technical error messages reaching the user. Ensures database consistency is maintained even when external services fail.</td>
+            </tr>
+        </table>
+
+        <h2>7.10 Model Selection Strategy and Future Roadmap</h2>
+
+        <p>OpenRouter's model-agnostic architecture means model selection is a configuration decision, not an engineering decision. The current selection criteria and future evolution path:</p>
+
+        <table>
+            <tr><th>Criterion</th><th>Current Approach</th><th>Future Approach</th></tr>
+            <tr>
+                <td>Default Model</td>
+                <td><code>google/gemini-2.5-flash</code> — cost-optimised for beta traffic volumes.</td>
+                <td>A/B test across Gemini, Claude Haiku, and Llama 4 to measure output quality per dollar across each pipeline.</td>
+            </tr>
+            <tr>
+                <td>Fallback Strategy</td>
+                <td>Single fallback model (<code>anthropic/claude-3.5-haiku</code>) on primary failure.</td>
+                <td>Cascading fallback: primary → secondary → tertiary. Automatic routing via OpenRouter's provider preferences parameter.</td>
+            </tr>
+            <tr>
+                <td>Quality Measurement</td>
+                <td>Admin review acts as a manual quality gate for resume feedback.</td>
+                <td>Introduce an offline evaluation set (gold-standard scored resumes) to measure prompt quality regression across model and prompt changes.</td>
+            </tr>
+            <tr>
+                <td>Resume Text Extraction</td>
+                <td>Only file metadata available. The model evaluates based on trade context and metadata, not resume content.</td>
+                <td>Extract full resume text from PDF (via a lightweight PDF parser running in the Worker or as a pre-processing step) and pass the text as the Input layer. This is the single highest-impact improvement for feedback quality.</td>
+            </tr>
+            <tr>
+                <td>Few-Shot Exemplars</td>
+                <td>Zero-shot prompting (no examples in the prompt).</td>
+                <td>Include 1-2 gold-standard resume evaluations in the system prompt as few-shot exemplars (Brown et al., 2020). This has been shown to significantly improve output consistency.</td>
+            </tr>
+            <tr>
+                <td>Self-Refinement</td>
+                <td>Single-pass inference.</td>
+                <td>Two-pass inference: first pass generates output, second pass critiques and refines it (Madaan et al., 2023 — Self-Refine). Doubles inference cost but substantially improves accuracy for scoring tasks.</td>
+            </tr>
+        </table>
+    </section>
+
+    <section class="content page-break">
+        <h1>8. Pricing Rationale, Quotation Basis, and OPEX Estimation</h1>
+        <p>This section explains the commercial logic behind the quoted delivery amount and the expected monthly operating cost after launch. It is designed for client-side decision making and is mapped directly to the delivery artifacts: <strong>Quotation</strong>, <strong>Product Backlog</strong>, and <strong>Valuation Breakdown</strong>.</p>
+
+        <h2>8.1 Documented Pricing Inputs and Evidence</h2>
+        <table>
+            <tr><th>Source Artifact</th><th>What It Contributes</th><th>Commercial Relevance</th></tr>
+            <tr><td>Quotation (QT-260327-KWK-001)</td><td>Formal commercial offer and payment terms.</td><td>Defines final billed amount and milestone schedule.</td></tr>
+            <tr><td>Valuation_Breakdown.csv</td><td>Conversion model from story points to hours, then to USD and IDR.</td><td>Provides objective effort-to-price traceability.</td></tr>
+            <tr><td>Product_Backlog.csv</td><td>Itemized user stories with FE, BE, and integration point allocation.</td><td>Justifies complexity and scope included in the quote.</td></tr>
+        </table>
+
+        <h2>8.2 Story Point to Price Methodology</h2>
+        <table>
+            <tr><th>Method Variable</th><th>Value</th><th>Justification</th></tr>
+            <tr><td>Story point to hours</td><td>1 SP = 0.5 hours</td><td>Represents average 30-minute unit for senior implementation and validation effort.</td></tr>
+            <tr><td>Hourly rate</td><td>USD 30 per hour</td><td>Applied consistently across all valuation rows in the pricing sheet.</td></tr>
+            <tr><td>Daily capacity baseline</td><td>4 focused hours/day</td><td>Conservative throughput for quality-controlled backend delivery.</td></tr>
+            <tr><td>Exchange rate</td><td>IDR 16,900 per USD</td><td>Used for transparent conversion in client-facing local currency.</td></tr>
+        </table>
+
+        <div class="box teal">
+            <p><strong>Core pricing formula:</strong> Total Cost = Story Points x 0.5 hours x USD 30/hour, then converted to IDR.</p>
+        </div>
+
+        <h2>8.3 Product Backlog to Quotation Mapping</h2>
+        <table>
+            <tr><th>Commercial Scope Segment</th><th>Story Points</th><th>Hours</th><th>USD</th><th>IDR</th><th>Status</th></tr>
+            <tr><td>Full implementation effort (FE + BE + Integration)</td><td>66</td><td>33.0</td><td>990</td><td>16,731,000</td><td>Reference valuation only</td></tr>
+            <tr><td>Backend development billed scope</td><td>40</td><td>20.0</td><td>600</td><td>10,140,000</td><td><strong>Included and billed</strong></td></tr>
+            <tr><td>Frontend implementation</td><td>25</td><td>12.5</td><td>375</td><td>6,337,500</td><td>Excluded from bill</td></tr>
+            <tr><td>Integration testing package</td><td>22</td><td>11.0</td><td>330</td><td>5,577,000</td><td>Excluded from bill</td></tr>
+            <tr><td>PM deliverables (PRD, ERD, UX, architecture docs)</td><td>-</td><td>-</td><td>-</td><td>0</td><td>Provided without additional fee</td></tr>
+        </table>
+
+        <h2>8.4 Story Point Justification by Delivery Theme</h2>
+        <table>
+            <tr><th>Theme</th><th>Representative Backlog Stories</th><th>Why SP Is Assigned at This Level</th></tr>
+            <tr><td>Infrastructure foundation</td><td>D1 schema setup, R2 bucket binding, Worker environment setup</td><td>Requires production-safe data constraints, index planning, secret management, and deploy-ready environment configuration.</td></tr>
+            <tr><td>Auth and access control</td><td>Clerk webhook sync, JWT verification middleware, admin role gate</td><td>Security-sensitive integration work with token verification, role checks, and identity synchronization logic.</td></tr>
+            <tr><td>Resume and AI workflow</td><td>Resume upload, durable resume feedback pipeline, admin review updates</td><td>Highest complexity area due to multi-step orchestration, quota/dedup checks, normalization, and governance requirements.</td></tr>
+            <tr><td>Interview generation pipeline</td><td>Question generation and history retrieval</td><td>Moderate complexity with strict prompt contracts, persistence, and quota control while preserving immediate UX response.</td></tr>
+            <tr><td>Admin operations and exports</td><td>Feedback queue, waitlist review, CSV export, audit log</td><td>Operational tooling must be searchable, secure, and auditable with predictable export behavior.</td></tr>
+            <tr><td>Public acquisition and email layer</td><td>Trade waitlist, employer waitlist, contact capture, Resend integration</td><td>Requires unauthenticated validation, clean persistence, and reliable transactional notification flow.</td></tr>
+        </table>
+
+        <h2>8.5 Final Quotation and Payment Terms</h2>
+        <table>
+            <tr><th>Commercial Item</th><th>Amount (USD)</th><th>Amount (IDR)</th><th>Note</th></tr>
+            <tr><td>Grand total billed (backend development)</td><td>600</td><td>10,140,000</td><td>Based on 40 SP x 0.5 hours x USD 30/hour</td></tr>
+            <tr><td>Payment term 1</td><td>-</td><td>5,070,000</td><td>50 percent down payment at kickoff</td></tr>
+            <tr><td>Payment term 2</td><td>-</td><td>5,070,000</td><td>50 percent at UAT sign-off and handover</td></tr>
+        </table>
+
+        <h2>8.6 OPEX Estimation Model (Post-Launch)</h2>
+        <p>Operating expenditure is primarily variable and usage-driven because the architecture is serverless and edge-based. The principal paid driver is AI token usage. Compute, database, and storage stay near zero at small scale due to free tiers.</p>
+
+        <h3>8.6.1 OPEX Assumptions for Estimation</h3>
+        <table>
+            <tr><th>Assumption</th><th>Value</th><th>Reason</th></tr>
+            <tr><td>Average AI actions per MAU per month</td><td>1.2</td><td>Reflects moderate beta usage under capped AI policy.</td></tr>
+            <tr><td>Average Worker requests per MAU per month</td><td>120</td><td>Covers dashboard, profile, admin, and workflow interactions.</td></tr>
+            <tr><td>Average operational emails per MAU per month</td><td>2</td><td>Includes confirmations and operational notification flows.</td></tr>
+            <tr><td>Average token profile per AI action</td><td>4,000 input + 900 output</td><td>Conservative for structured response format.</td></tr>
+            <tr><td>Primary model baseline</td><td>Gemini 2.5 Flash via OpenRouter</td><td>Best cost-quality profile for launch phase.</td></tr>
+        </table>
+
+        <h3>8.6.2 Unit Economics per AI Action</h3>
+        <table>
+            <tr><th>Model</th><th>Estimated Cost per Action (USD)</th><th>Commercial Implication</th></tr>
+            <tr><td>Gemini 2.5 Flash</td><td>0.00345</td><td>Default low-cost configuration for high efficiency.</td></tr>
+            <tr><td>Claude 3.5 Haiku</td><td>0.00680</td><td>About 2x Gemini cost for similar action volume.</td></tr>
+            <tr><td>Claude Sonnet 4</td><td>0.02550</td><td>Premium quality profile with materially higher unit cost.</td></tr>
+        </table>
+
+        <h3>8.6.3 Free Tier Coverage and First Paid Triggers</h3>
+        <table>
+            <tr><th>Service</th><th>Free Coverage</th><th>Likely First Trigger</th></tr>
+            <tr><td>Cloudflare Workers</td><td>100k requests/day</td><td>Usually after approximately 25k MAU in this product pattern.</td></tr>
+            <tr><td>Cloudflare D1</td><td>High daily read/write allowance</td><td>Rarely first bottleneck at early-stage volume.</td></tr>
+            <tr><td>Cloudflare R2</td><td>10 GB + operation allowances</td><td>Depends on file count growth, typically later than email/AI costs.</td></tr>
+            <tr><td>Resend</td><td>3,000 emails/month and 100/day</td><td>Often first paid SaaS threshold at low thousands of users.</td></tr>
+            <tr><td>Clerk</td><td>Up to 50,000 MRU on hobby tier</td><td>Paid auth tier begins only at larger active user scale.</td></tr>
+            <tr><td>OpenRouter</td><td>No free inference quota</td><td>Cost starts from first AI action.</td></tr>
+        </table>
+
+        <h3>8.6.4 Monthly OPEX by User Scale (Gemini Baseline)</h3>
+        <table>
+            <tr><th>User Scale (MAU)</th><th>AI Cost (USD)</th><th>Infra Variable Cost (USD)</th><th>Email/Auth Fixed Cost (USD)</th><th>Estimated Total OPEX (USD/mo)</th><th>Client Interpretation</th></tr>
+            <tr><td>0 - 100</td><td>0.40</td><td>0.00</td><td>0.00</td><td><strong>0.40</strong></td><td>Effectively near-zero; almost entirely AI variable cost.</td></tr>
+            <tr><td>100 - 500</td><td>0.40 - 2.10</td><td>0.00</td><td>0.00</td><td><strong>0.50 - 2.10</strong></td><td>Runs comfortably within free tiers.</td></tr>
+            <tr><td>500 - 1,000</td><td>2.10 - 4.10</td><td>0.00</td><td>0 - 20</td><td><strong>2.10 - 24.10</strong></td><td>Resend free daily cap may start requiring paid plan.</td></tr>
+            <tr><td>1,000 - 2,500</td><td>4.10 - 10.35</td><td>0.00</td><td>20</td><td><strong>24.10 - 30.35</strong></td><td>Typical early production range with low fixed burn.</td></tr>
+            <tr><td>2,500 - 5,000</td><td>10.35 - 20.70</td><td>0.00 - 1.00</td><td>20</td><td><strong>30.35 - 41.70</strong></td><td>Still strongly cost-efficient.</td></tr>
+            <tr><td>5,000 - 15,000</td><td>20.70 - 62.10</td><td>1.00 - 4.00</td><td>20 - 40</td><td><strong>41.70 - 106.10</strong></td><td>Mid-scale with predictable gradual cost growth.</td></tr>
+            <tr><td>15,000 - 30,000</td><td>62.10 - 124.20</td><td>4.00 - 8.00</td><td>40 - 90</td><td><strong>106.10 - 222.20</strong></td><td>Email tier changes drive fixed jump; still low infrastructure cost.</td></tr>
+            <tr><td>30,000 - 50,000</td><td>124.20 - 207.00</td><td>8.00 - 12.00</td><td>90 - 110</td><td><strong>222.20 - 329.00</strong></td><td>Auth and email tiers begin to matter more than infra.</td></tr>
+        </table>
+
+        <h3>8.6.5 Fixed vs Variable Cost Structure</h3>
+        <table>
+            <tr><th>Cost Type</th><th>Components</th><th>Behavior with Growth</th></tr>
+            <tr><td>Variable</td><td>OpenRouter token usage, Workers requests over free limit, D1 writes over included limit, R2 storage growth</td><td>Scales with real user activity; low during inactivity.</td></tr>
+            <tr><td>Fixed / Step-fixed</td><td>Resend plan tier, Clerk paid plan tier</td><td>Increases in tier steps at specific usage thresholds.</td></tr>
+            <tr><td>Operationally favorable characteristic</td><td>Serverless scale-to-zero architecture</td><td>Avoids paying for idle always-on servers.</td></tr>
+        </table>
+
+        <div class="box amber">
+            <p><strong>Client takeaway:</strong> the delivery quote is justified by backlog-traceable implementation complexity, while post-launch OPEX remains low at small scale and grows mostly as variable usage cost. This protects early-stage cash flow and keeps cost proportional to product traction.</p>
+        </div>
+    </section>
+
+    <section class="content page-break">
+        <h1>9. Security, Privacy, and Governance</h1>
+        <h2>9.1 Access Control</h2>
+        <ul>
+            <li>Protected routes must require authentication.</li>
+            <li>Administrative workflows must require explicit admin role assignment.</li>
+            <li>Backend data access must be constrained by row-level security policies wherever appropriate.</li>
+        </ul>
+
+        <h2>9.2 Data Sensitivity</h2>
+        <ul>
+            <li>Resume files and associated feedback are user-sensitive data and must not be publicly exposed.</li>
+            <li>Waitlist submissions contain personal and business contact data and must be treated as controlled internal data.</li>
+            <li>Job descriptions entered by users may contain employer-sensitive details and should be handled as private user input.</li>
+        </ul>
+
+        <h2>9.3 Governance Requirements</h2>
+        <table>
+            <tr><th>Area</th><th>Requirement</th></tr>
+            <tr><td>AI Output Governance</td><td>Resume feedback shall pass through admin review before approved content is exposed to users.</td></tr>
+            <tr><td>Legal Visibility</td><td>Privacy policy and terms of service pages must remain public and accessible.</td></tr>
+            <tr><td>Operational Logging</td><td>Edge functions and admin actions should be observable enough for troubleshooting and support.</td></tr>
+            <tr><td>Change Management</td><td>Schema, role, and AI prompt changes should be version-controlled and released intentionally.</td></tr>
+        </table>
+    </section>
+
+    <section class="content page-break">
+        <h1>10. Delivery Assumptions, Risks, and Out of Scope</h1>
+        <h2>10.1 Delivery Assumptions</h2>
+        <ul>
+            <li>Supabase remains the authoritative backend platform for auth, database, storage, and edge functions.</li>
+            <li>Existing route structure and product positioning remain substantially unchanged during this documentation baseline period.</li>
+            <li>AI provider behavior and model availability may change over time, but structured output contracts remain mandatory.</li>
+            <li>Admin review remains part of the quality-control model for resume feedback.</li>
+        </ul>
+
+        <h2>10.2 Key Risks</h2>
+        <div class="box red">
+            <ul>
+                <li>Current resume feedback quality is limited by the absence of full resume text extraction and deeper parsing.</li>
+                <li>Email notification workflow is not yet production-complete, which creates operational visibility gaps.</li>
+                <li>AI quota is deliberately small and may constrain user value if beta usage grows before policy changes are introduced.</li>
+                <li>Employer functionality is currently demand-capture only, which may create expectation gaps if not communicated clearly.</li>
+            </ul>
+        </div>
+
+        <h2>10.3 Explicit Out-of-Scope Items</h2>
+        <ul>
+            <li>Real-time chat or messaging between employers and candidates.</li>
+            <li>Payment collection, invoicing, or subscription billing.</li>
+            <li>Automated hiring workflow or applicant tracking system capability.</li>
+            <li>Advanced analytics dashboards beyond current lightweight summaries and CSV export patterns.</li>
+        </ul>
+    </section>
+
+    <section class="content page-break">
+        <h1>11. Delivery Roadmap</h1>
+        <table>
+            <tr><th>Phase</th><th>Focus</th><th>Expected Outcome</th></tr>
+            <tr><td>Phase 1</td><td>Core Platform Stabilization</td><td>Confirm schema integrity, RLS correctness, storage behavior, and AI edge function reliability.</td></tr>
+            <tr><td>Phase 2</td><td>Operational Completion</td><td>Complete admin notification pathway, strengthen monitoring, and improve failure handling.</td></tr>
+            <tr><td>Phase 3</td><td>Experience Enhancement</td><td>Improve resume parsing depth, analytics visibility, and user profile maturity.</td></tr>
+            <tr><td>Phase 4</td><td>Go-to-Market Expansion</td><td>Extend employer workflows and evolve the career fair experience into an executable product module.</td></tr>
+        </table>
+
+        <h2>11.1 Recommended Immediate Next Priorities</h2>
+        <ol>
+            <li>Align stakeholders on this requirements baseline and approve scope boundaries.</li>
+            <li>Close operational gaps in notification and observability.</li>
+            <li>Improve backend handling of resume content to raise feedback quality.</li>
+            <li>Establish release criteria for beta-to-production readiness.</li>
+        </ol>
+    </section>
+
+    <section class="content page-break">
+        <h1>12. Revision History and Sign-off</h1>
+        <h2>12.1 Revision History</h2>
+        <table>
+            <tr><th>Date</th><th>Version</th><th>Summary</th></tr>
+            <tr><td>March 26, 2026</td><td>2.0</td><td>Replaced lightweight proposal content with a detailed corporate-standard product and backend requirements document aligned to the current codebase.</td></tr>
+            <tr><td>Prior version</td><td>1.0</td><td>Initial proposal shell with styling and high-level backend concepts not fully aligned to the implemented stack.</td></tr>
+        </table>
+
+        <h2>12.2 Sign-off</h2>
+        <table>
+            <tr><th>Role</th><th>Name</th><th>Date</th><th>Signature</th></tr>
+            <tr><td>Product Owner</td><td></td><td></td><td></td></tr>
+            <tr><td>Engineering Lead</td><td></td><td></td><td></td></tr>
+            <tr><td>Operations / Admin Lead</td><td></td><td></td><td></td></tr>
+            <tr><td>Stakeholder Approval</td><td></td><td></td><td></td></tr>
+        </table>
+
+        <div class="footer-note">
+            End of document. This specification should be maintained as the authoritative baseline until superseded by an approved revision.
+        </div>
+    </section>
+</body>
+</html>

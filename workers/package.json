@@ -1,0 +1,21 @@
+{
+  "name": "kraftworks-api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:migrate": "wrangler d1 execute kraftworks-db --file=./migrations/0001_schema.sql",
+    "db:migrate:local": "wrangler d1 execute kraftworks-db --local --file=./migrations/0001_schema.sql",
+    "tail": "wrangler tail"
+  },
+  "dependencies": {
+    "hono": "^4.6.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241127.0",
+    "wrangler": "^3.91.0",
+    "typescript": "^5.8.0"
+  }
+}

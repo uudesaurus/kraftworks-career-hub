@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quotation — QT-260403-KWK-001</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --navy: #10233f;
+            --blue: #1f5eff;
+            --blue-soft: #eaf1ff;
+            --teal: #0f766e;
+            --teal-soft: #ccfbf1;
+            --amber: #b7791f;
+            --amber-soft: #fff7e8;
+            --red: #b91c1c;
+            --red-soft: #fee2e2;
+            --ink: #1e293b;
+            --muted: #64748b;
+            --line: #d9e2ec;
+            --surface: #f8fafc;
+            --white: #ffffff;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--ink);
+            background: var(--white);
+            font-size: 13px;
+            line-height: 1.65;
+        }
+
+        .page {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 48px 48px 60px;
+        }
+
+        /* ── Header ── */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 32px;
+            padding-bottom: 24px;
+            border-bottom: 3px solid var(--navy);
+        }
+
+        .header-left h1 {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--navy);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .header-left .doc-type {
+            font-size: 12px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .header-right {
+            text-align: right;
+            font-size: 12px;
+            color: var(--ink);
+            line-height: 1.8;
+        }
+
+        .header-right strong {
+            color: var(--navy);
+        }
+
+        /* ── Identity Blocks ── */
+        .parties {
+            display: flex;
+            justify-content: space-between;
+            gap: 40px;
+            margin-bottom: 32px;
+        }
+
+        .party {
+            flex: 1;
+        }
+
+        .party-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        .party-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--navy);
+            margin-bottom: 4px;
+        }
+
+        .party-detail {
+            font-size: 12px;
+            color: var(--ink);
+            line-height: 1.7;
+        }
+
+        /* ── Project Overview ── */
+        .section-title {
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--blue);
+            margin-top: 28px;
+            margin-bottom: 10px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid var(--blue);
+        }
+
+        .overview-grid {
+            display: grid;
+            grid-template-columns: 140px 1fr;
+            gap: 4px 16px;
+            font-size: 13px;
+            margin-bottom: 20px;
+        }
+
+        .overview-grid dt {
+            font-weight: 600;
+            color: var(--navy);
+        }
+
+        .overview-grid dd {
+            color: var(--ink);
+        }
+
+        /* ── Tables ── */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0 20px;
+            font-size: 12px;
+        }
+
+        th, td {
+            border: 1px solid var(--line);
+            padding: 10px 12px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            background: var(--navy);
+            color: var(--white);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        tr:nth-child(even) td { background: var(--surface); }
+
+        .amount { text-align: right; font-weight: 600; white-space: nowrap; }
+
+        .subtotal-row td {
+            border-top: 2px solid var(--ink);
+            font-weight: 700;
+        }
+
+        .summary-value-row td {
+            background: #e8f0ff !important;
+            color: var(--navy) !important;
+            font-weight: 700;
+        }
+
+        .summary-discount-row td {
+            background: #fff1f2 !important;
+            color: #9f1239 !important;
+            font-weight: 700;
+        }
+
+        .summary-pay-row td {
+            background: #ecfdf5 !important;
+            color: #065f46 !important;
+            font-weight: 700;
+        }
+
+        .total-row td {
+            background: var(--navy) !important;
+            color: var(--white) !important;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .desc-small {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 3px;
+        }
+
+        .struck td {
+            text-decoration: line-through;
+            color: var(--muted) !important;
+            background: #fef2f2 !important;
+        }
+
+        .struck td strong,
+        .struck td .desc-small {
+            color: var(--muted) !important;
+        }
+
+        .struck .amount {
+            text-decoration: line-through;
+            color: var(--muted) !important;
+        }
+
+        .excluded-label {
+            display: inline-block;
+            background: var(--red-soft);
+            color: var(--red);
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-left: 6px;
+            text-decoration: none;
+            vertical-align: middle;
+        }
+
+        /* ── Payment Block ── */
+        .payment-box {
+            border: 2px solid var(--teal);
+            border-radius: 10px;
+            padding: 18px 20px;
+            margin: 20px 0;
+            background: var(--teal-soft);
+        }
+
+        .payment-box h3 {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--teal);
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .payment-box table {
+            margin: 0;
+        }
+
+        .payment-box th {
+            background: var(--teal);
+        }
+
+        /* ── Bank Info ── */
+        .bank-box {
+            border: 2px solid var(--blue);
+            border-radius: 10px;
+            padding: 18px 20px;
+            margin: 20px 0;
+            background: var(--blue-soft);
+        }
+
+        .bank-box h3 {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--blue);
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .bank-grid {
+            display: grid;
+            grid-template-columns: 140px 1fr;
+            gap: 4px 16px;
+            font-size: 13px;
+        }
+
+        .bank-grid dt { font-weight: 600; color: var(--navy); }
+        .bank-grid dd { color: var(--ink); }
+
+        /* ── Notes ── */
+        .notes {
+            margin-top: 24px;
+            padding: 16px 18px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            background: var(--surface);
+        }
+
+        .notes h3 {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--navy);
+            margin-bottom: 8px;
+        }
+
+        .notes ol {
+            margin: 0 0 0 18px;
+            font-size: 12px;
+            line-height: 1.8;
+        }
+
+        .notes ol li { margin-bottom: 4px; }
+
+        /* ── Tax Note ── */
+        .tax-note {
+            margin-top: 16px;
+            padding: 12px 16px;
+            border-left: 4px solid var(--amber);
+            background: var(--amber-soft);
+            border-radius: 0 8px 8px 0;
+            font-size: 12px;
+        }
+
+        .tax-note strong { color: var(--amber); }
+
+        /* ── Signatures ── */
+        .signatures {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 48px;
+            padding-top: 20px;
+        }
+
+        .sig-block {
+            width: 45%;
+        }
+
+        .sig-label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--muted);
+            margin-bottom: 60px;
+        }
+
+        .sig-line {
+            border-top: 1px solid var(--ink);
+            padding-top: 8px;
+        }
+
+        .sig-name {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--navy);
+        }
+
+        .sig-detail {
+            font-size: 11px;
+            color: var(--muted);
+        }
+
+        /* ── Deliverables ── */
+        .deliverables {
+            margin: 12px 0;
+        }
+
+        .deliverables li {
+            margin-bottom: 6px;
+            font-size: 12px;
+        }
+
+        .deliverables li strong {
+            color: var(--navy);
+        }
+
+        /* ── Print ── */
+        @media print {
+            .page {
+                padding: 24px;
+                max-width: 100%;
+            }
+
+            .header-left h1 { font-size: 26px; }
+
+            .payment-box, .bank-box, .notes, .tax-note {
+                break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+
+    <!-- ══════════ HEADER ══════════ -->
+    <div class="header">
+        <div class="header-left">
+            <h1>Quotation</h1>
+            <div class="doc-type">Project Development Proposal</div>
+        </div>
+        <div class="header-right">
+            <strong>Quote #:</strong> QT-260403-KWK-001<br>
+            <strong>Date:</strong> April 3, 2026<br>
+            <strong>Validity:</strong> Valid until April 17, 2026 (14 days)
+        </div>
+    </div>
+
+    <!-- ══════════ PARTIES ══════════ -->
+    <div class="parties">
+        <div class="party">
+            <div class="party-label">From</div>
+            <div class="party-name">Mahmud Asrul</div>
+            <div class="party-detail">
+                NIK: 7371141104030002<br>
+                Product Engineer (Freelance)<br>
+                Full-Stack Development &amp; AI Pipeline Architecture
+            </div>
+        </div>
+        <div class="party">
+            <div class="party-label">Bill To</div>
+            <div class="party-name">Vinny Wardhani</div>
+            <div class="party-detail">
+                Kraftworks Career Hub<br>
+                Project Stakeholder
+            </div>
+        </div>
+    </div>
+
+    <!-- ══════════ PROJECT OVERVIEW ══════════ -->
+    <div class="section-title">Project Overview</div>
+
+    <dl class="overview-grid">
+        <dt>Project Name</dt>
+        <dd>Kraftworks Career Hub — Backend Migration &amp; AI Pipeline Development</dd>
+        <dt>Description</dt>
+        <dd>Backend architecture development on Cloudflare (D1 + Workers + Workflows + R2) with Clerk authentication webhooks, OpenRouter AI pipeline integration, and Resend email delivery. Frontend integration and end-to-end integration support are included as a full project discount for this quotation.</dd>
+        <dt>Scope</dt>
+        <dd>Backend track: 40 story points billed. Frontend integration and integration testing are delivered as discounted support items for launch readiness.</dd>
+        <dt>Timeline</dt>
+        <dd>5 working days for backend delivery, with frontend and integration support included within the same handover window</dd>
+    </dl>
+
+    <!-- ══════════ DELIVERABLES ══════════ -->
+    <div class="section-title">Deliverables</div>
+
+    <p style="font-size: 12px; margin-bottom: 8px;"><strong>A. Product Management &amp; Design Deliverables</strong> (included in Management Fee)</p>
+    <ol class="deliverables">
+        <li><strong>Product Requirements Document (PRD)</strong> — Full backend proposal with technology rationale, request lifecycle, AI methodology framework (Bloom's Taxonomy, STAR Method, O*NET, NACE, Rubric-Anchored Evaluation), and operational policies.</li>
+        <li><strong>Entity Relationship Diagram (ERD)</strong> — 12-entity canonical data model with column specifications, lifecycle policies, referential rules, interaction models, and recommended indexes.</li>
+        <li><strong>UX Flow Comparison</strong> — 17-route current (Supabase) vs. proposed (Cloudflare) user journey analysis with impact assessment per route.</li>
+        <li><strong>Backend Architecture Design</strong> — Before &amp; After architecture mapping, service selection rationale (Clerk vs. Supabase Auth, D1 vs. PostgreSQL, Workers vs. Edge Functions, OpenRouter vs. direct API, Resend vs. stub).</li>
+    </ol>
+
+    <p style="font-size: 12px; margin-bottom: 8px; margin-top: 16px;"><strong>B. Development Deliverables</strong></p>
+    <ol class="deliverables">
+        <li><strong>Cloudflare D1 Database</strong> — Full schema with 12 tables, migrations, indexes, and constraints.</li>
+        <li><strong>Cloudflare R2 Storage</strong> — Resume PDF storage with user-scoped access.</li>
+        <li><strong>Clerk Authentication</strong> — Frontend components, webhook user sync, JWT middleware, role-based access control.</li>
+        <li><strong>Employer &amp; Employee Pipeline</strong> — Backend workflow coverage for employer-side hiring flows and employee-side application/progression flows created as part of this prototype delivery.</li>
+        <li><strong>AI Resume Feedback Workflow</strong> — 6-step durable Cloudflare Workflow with OpenRouter inference, output normalization, admin review lifecycle, and Resend notification.</li>
+        <li><strong>AI Interview Prep Workflow</strong> — Categorized question generation (technical, behavioral, situational) with quota enforcement and deduplication.</li>
+        <li><strong>Admin Panel Backend</strong> — Feedback review, waitlist management, CSV export, audit logging.</li>
+        <li><strong>Waitlist &amp; Contact Workers</strong> — Public form processing with email confirmation.</li>
+        <li><strong>Resend Email System</strong> — Transactional email with SPF/DKIM/DMARC, 3 templates.</li>
+        <li><strong>Frontend API Integration</strong> — All React hooks and components rewired from Supabase client to Cloudflare Worker endpoints.</li>
+        <li><strong>End-to-End Integration Testing</strong> — Full flow verification for all 9 epics.</li>
+    </ol>
+
+    <!-- ══════════ COST BREAKDOWN ══════════ -->
+    <div class="section-title">Cost Breakdown</div>
+
+    <table>
+        <tr>
+            <th style="width: 45%;">Item Description</th>
+            <th style="width: 18%;">Story Points</th>
+            <th style="width: 12%;">Days</th>
+            <th style="width: 25%;">Amount (IDR)</th>
+        </tr>
+        <tr>
+            <td>
+                <strong>Backend Development</strong>
+                <div class="desc-small">D1 schema, Workers, Workflows, R2, Clerk webhooks, OpenRouter AI pipelines, Resend integration, Admin APIs</div>
+            </td>
+            <td class="amount">40 SP</td>
+            <td class="amount">5</td>
+            <td class="amount">Rp 2,500,000</td>
+        </tr>
+        <tr class="struck">
+            <td>
+                <strong>Frontend Integration</strong> <span class="excluded-label">100% Discount</span>
+                <div class="desc-small">Standard rate Rp 500,000/day. Clerk UI components, API hook rewiring, state management updates, protected route migration provided at no additional charge.</div>
+            </td>
+            <td class="amount"><s>25 SP</s></td>
+            <td class="amount"><s>4</s></td>
+            <td class="amount"><s>Rp 2,000,000</s></td>
+        </tr>
+        <tr class="struck">
+            <td>
+                <strong>Integration Testing</strong> <span class="excluded-label">100% Discount</span>
+                <div class="desc-small">Standard rate Rp 500,000/day. End-to-end flow verification, edge case validation, and deployment testing are included as complimentary support.</div>
+            </td>
+            <td class="amount"><s>22 SP</s></td>
+            <td class="amount"><s>3</s></td>
+            <td class="amount"><s>Rp 1,500,000</s></td>
+        </tr>
+        <tr class="struck">
+            <td>
+                <strong>Management / PM Deliverables</strong> <span class="excluded-label">Courtesy Included</span>
+                <div class="desc-small">20% of total service value. PRD, ERD Model, UX Flow Comparison, Backend Architecture Design — included as supporting documentation at no additional charge.</div>
+            </td>
+            <td class="amount"><s>—</s></td>
+            <td class="amount"><s>—</s></td>
+            <td class="amount"><s>Rp 1,200,000</s></td>
+        </tr>
+        <tr class="summary-value-row">
+            <td><strong>Reference Total Value Before Discount</strong></td>
+            <td class="amount"><strong>87 SP</strong></td>
+            <td class="amount"><strong>12</strong></td>
+            <td class="amount"><strong>Rp 7,200,000</strong></td>
+        </tr>
+        <tr class="summary-discount-row">
+            <td><strong>Total Discount Applied, Not Payable</strong></td>
+            <td class="amount"><strong>47 SP</strong></td>
+            <td class="amount"><strong>7</strong></td>
+            <td class="amount"><strong>Rp 4,700,000</strong></td>
+        </tr>
+        <tr class="summary-pay-row">
+            <td><strong>Amount to Pay After Discount</strong></td>
+            <td class="amount"><strong>40 SP</strong></td>
+            <td class="amount"><strong>5</strong></td>
+            <td class="amount"><strong>Rp 2,500,000</strong></td>
+        </tr>
+        <tr class="total-row">
+            <td colspan="3"><strong>FINAL PRICE</strong></td>
+            <td class="amount"><strong>Rp 2,500,000</strong></td>
+        </tr>
+    </table>
+
+    <p style="font-size: 11px; color: var(--muted); margin-top: -12px;">
+        Rate basis: Rp 500,000/day for backend delivery. Total service value is Rp 7,200,000, with Rp 4,700,000 discounted across frontend, integration, and management support, resulting in a final billed price of Rp 2,500,000.
+    </p>
+
+    <!-- ══════════ PAYMENT SCHEDULE ══════════ -->
+    <div class="payment-box">
+        <h3>Payment Schedule</h3>
+        <table>
+            <tr>
+                <th style="width: 40%;">Term</th>
+                <th style="width: 30%;">Condition</th>
+                <th style="width: 30%;">Amount</th>
+            </tr>
+            <tr>
+                <td><strong>Term 1 — Down Payment (50%)</strong></td>
+                <td>Due upon project kickoff / signing</td>
+                <td class="amount">Rp 1,250,000</td>
+            </tr>
+            <tr>
+                <td><strong>Term 2 — Final Delivery (50%)</strong></td>
+                <td>Due upon handover</td>
+                <td class="amount">Rp 1,250,000</td>
+            </tr>
+            <tr class="subtotal-row">
+                <td colspan="2"><strong>Total</strong></td>
+                <td class="amount"><strong>Rp 2,500,000</strong></td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- ══════════ PAYMENT METHOD ══════════ -->
+    <div class="bank-box">
+        <h3>Payment Method</h3>
+        <dl class="bank-grid">
+            <dt>Bank</dt>
+            <dd>Bank Jago</dd>
+            <dt>Account Number</dt>
+            <dd><strong>1052 8364 5712</strong></dd>
+            <dt>Account Holder</dt>
+            <dd>Mahmud Asrul</dd>
+        </dl>
+    </div>
+
+    <!-- ══════════ TAX NOTE ══════════ -->
+    <div class="tax-note">
+        <strong>Tax Information (PPN / PPh)</strong><br>
+        This quotation does <strong>not include PPN</strong> (Pajak Pertambahan Nilai / VAT). As an individual service provider with annual revenue below the PKP (Pengusaha Kena Pajak) threshold of Rp 4.8 billion, PPN at 12% is not obligated to be charged.<br><br>
+        Income tax obligations (PPh 21 for individual service providers) are the responsibility of the service provider per applicable Indonesian tax regulations (PP 58/2023). If the client requires PPN inclusion or a Faktur Pajak for accounting/tax deduction purposes, the total will be adjusted to include the applicable 12% PPN, and this can be discussed prior to signing.
+    </div>
+
+    <!-- ══════════ NOTES & TERMS ══════════ -->
+    <div class="notes">
+        <h3>Notes &amp; Terms</h3>
+        <ol>
+            <li>This quotation bills only the <strong>backend development scope</strong> at Rp 500,000/day for 5 working days. Backend delivery is fully covered within this billed scope.</li>
+            <li>Development will commence immediately after the Term 1 Down Payment is received and confirmed.</li>
+            <li>Any additional features, scope changes, or requirements outside this quotation will be estimated separately and billed using a daily-rate agreement.</li>
+            <li>Many parts required for the perfection of the prototype are intentionally handled outside the billed scope so the project can move forward successfully. Frontend integration, integration refinement, and management support are included here as discounted or courtesy contributions for project success.</li>
+            <li>Estimated delivery timeline: <strong>1 week</strong> for backend delivery, with discounted frontend and integration support completed within the same release cycle.</li>
+            <li>Source code will be delivered via private Git repository. Full handover includes deployment configuration, environment setup documentation, and a walkthrough session.</li>
+            <li>The quotation validity is <strong>14 days</strong> from the issue date. After expiry, pricing may be subject to revision.</li>
+            <li>Product management deliverables (PRD, ERD, UX Flow, Architecture Design) are included as companion documents at no charge.</li>
+        </ol>
+    </div>
+
+    <!-- ══════════ SIGNATURES ══════════ -->
+    <div class="signatures">
+        <div class="sig-block">
+            <div class="sig-label">Service Provider</div>
+            <div class="sig-line">
+                <div class="sig-name">Mahmud Asrul</div>
+                <div class="sig-detail">Product Engineer</div>
+                <div class="sig-detail">NIK: 7371141104030002</div>
+            </div>
+        </div>
+        <div class="sig-block">
+            <div class="sig-label">Client</div>
+            <div class="sig-line">
+                <div class="sig-name">Vinny Wardhani</div>
+                <div class="sig-detail">Kraftworks Career Hub</div>
+                <div class="sig-detail">Date: _______________</div>
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kraftworks Career Hub — UX Flow Comparison</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --primary: #0f766e;
+            --primary-light: #ccfbf1;
+            --secondary: #1e40af;
+            --secondary-light: #dbeafe;
+            --accent: #c2410c;
+            --accent-light: #ffedd5;
+            --text: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --bg: #ffffff;
+            --bg-alt: #f8fafc;
+            --success: #16a34a;
+            --success-light: #dcfce7;
+            --warning: #d97706;
+            --warning-light: #fef9c3;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--text);
+            background: var(--bg);
+            line-height: 1.7;
+            font-size: 14px;
+        }
+
+        .page { max-width: 1100px; margin: 0 auto; padding: 48px 40px; }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text);
+            margin-top: 40px;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        h3 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text);
+            margin-top: 24px;
+            margin-bottom: 10px;
+        }
+
+        h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-top: 16px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        p { margin-bottom: 12px; }
+
+        .subtitle {
+            font-size: 16px;
+            color: var(--text-muted);
+            margin-bottom: 32px;
+        }
+
+        .meta {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 32px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0 24px;
+            font-size: 13px;
+        }
+
+        th, td {
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            background: var(--bg-alt);
+            font-weight: 600;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            color: var(--text-muted);
+        }
+
+        .current { background: var(--accent-light); }
+        .proposed { background: var(--success-light); }
+
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .tag-current { background: var(--accent-light); color: var(--accent); }
+        .tag-proposed { background: var(--success-light); color: var(--success); }
+        .tag-unchanged { background: var(--secondary-light); color: var(--secondary); }
+        .tag-new { background: var(--primary-light); color: var(--primary); }
+
+        ul, ol { margin: 8px 0 16px 24px; }
+        li { margin-bottom: 6px; }
+
+        .flow-box {
+            background: var(--bg-alt);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 20px 24px;
+            margin: 16px 0;
+        }
+
+        .flow-box.current-flow {
+            border-left: 4px solid var(--accent);
+        }
+
+        .flow-box.proposed-flow {
+            border-left: 4px solid var(--success);
+        }
+
+        .flow-step {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .flow-step:last-child { margin-bottom: 0; }
+
+        .step-num {
+            flex-shrink: 0;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .step-num.current { background: var(--accent); }
+        .step-num.proposed { background: var(--success); }
+
+        .step-content { flex: 1; }
+        .step-content strong { font-size: 13px; }
+        .step-content p { font-size: 12px; color: var(--text-muted); margin-bottom: 0; }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin: 16px 0;
+        }
+
+        .delta-box {
+            background: var(--warning-light);
+            border: 1px solid #fbbf24;
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin: 16px 0;
+        }
+
+        .delta-box h4 {
+            color: var(--warning);
+            margin-top: 0;
+        }
+
+        code {
+            background: #f1f5f9;
+            padding: 1px 6px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+        }
+
+        .page-break { page-break-before: always; }
+
+        @media print {
+            body { font-size: 11px; }
+            .page { padding: 24px; }
+            h1 { font-size: 22px; }
+            h2 { font-size: 16px; }
+            table { font-size: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="page">
+
+    <h1>Kraftworks Career Hub — UX Flow Comparison</h1>
+    <p class="subtitle">Current Codebase (Supabase) vs. Proposed Architecture (Clerk + Cloudflare + OpenRouter + Resend)</p>
+    <p class="meta">Companion document to the Kraftworks Backend Proposal PRD. Compares every user-facing flow between the existing implementation and the proposed backend migration.</p>
+
+    <!-- ============================================================ -->
+    <h2>1. Document Purpose</h2>
+
+    <p>This document walks through every user journey in the Kraftworks Career Hub — from first visit to AI-assisted career feedback — and compares the current experience (built on Supabase) with the proposed experience (built on Clerk, Cloudflare Workers/D1, OpenRouter, and Resend). The comparison is flow-by-flow, identifying what changes, what stays the same, and why the change matters for the user.</p>
+
+    <p><strong>Key principle:</strong> The frontend React application and UI components remain unchanged. The user sees the same pages, the same buttons, and the same visual design. What changes is what happens after the user clicks — the authentication mechanism, the API endpoints, the data layer, and the AI inference pipeline. This document makes those invisible changes visible.</p>
+
+    <!-- ============================================================ -->
+    <h2>2. Route Map Overview</h2>
+
+    <table>
+        <tr>
+            <th>Route</th>
+            <th>Page</th>
+            <th>Auth Required</th>
+            <th>Backend Change Impact</th>
+        </tr>
+        <tr><td><code>/</code></td><td>Landing</td><td>No</td><td><span class="tag tag-unchanged">None</span> — Static content, no backend calls</td></tr>
+        <tr><td><code>/auth</code></td><td>Auth (Login/Signup)</td><td>No</td><td><span class="tag tag-proposed">Major</span> — Supabase Auth → Clerk</td></tr>
+        <tr><td><code>/dashboard</code></td><td>Dashboard</td><td>Yes</td><td><span class="tag tag-proposed">Major</span> — Auth session, data fetching from D1</td></tr>
+        <tr><td><code>/resume-review</code></td><td>Resume Review</td><td>Yes</td><td><span class="tag tag-proposed">Major</span> — File upload to R2, AI via OpenRouter</td></tr>
+        <tr><td><code>/interview-prep</code></td><td>Interview Prep</td><td>Yes</td><td><span class="tag tag-proposed">Major</span> — AI via OpenRouter Workflow</td></tr>
+        <tr><td><code>/admin</code></td><td>Admin Panel</td><td>Yes (admin)</td><td><span class="tag tag-proposed">Major</span> — Role checks via Clerk, D1 queries</td></tr>
+        <tr><td><code>/career-toolkit</code></td><td>Career Toolkit Hub</td><td>No</td><td><span class="tag tag-unchanged">None</span> — Static content</td></tr>
+        <tr><td><code>/career-toolkit/hvac</code></td><td>HVAC Toolkit</td><td>No</td><td><span class="tag tag-unchanged">None</span> — Static content</td></tr>
+        <tr><td><code>/career-toolkit/electrical</code></td><td>Electrical Toolkit</td><td>No</td><td><span class="tag tag-unchanged">None</span> — Static content</td></tr>
+        <tr><td><code>/career-toolkit/welding</code></td><td>Welding Toolkit</td><td>No</td><td><span class="tag tag-unchanged">None</span> — Static content</td></tr>
+        <tr><td><code>/blog</code></td><td>Blog Listing</td><td>No</td><td><span class="tag tag-unchanged">None</span> — Client-side data from <code>articles.ts</code></td></tr>
+        <tr><td><code>/blog/:slug</code></td><td>Article Page</td><td>No</td><td><span class="tag tag-unchanged">None</span> — Client-side data</td></tr>
+        <tr><td><code>/career-fair</code></td><td>Career Fair</td><td>No</td><td><span class="tag tag-unchanged">None</span> — Static promotional content</td></tr>
+        <tr><td><code>/waitlist</code></td><td>Waitlist</td><td>No</td><td><span class="tag tag-proposed">Moderate</span> — Form submission to D1 via Worker</td></tr>
+        <tr><td><code>/contact</code></td><td>Contact</td><td>No</td><td><span class="tag tag-proposed">Moderate</span> — Form submission + Resend email</td></tr>
+        <tr><td><code>/privacy-policy</code></td><td>Privacy Policy</td><td>No</td><td><span class="tag tag-unchanged">None</span> — Static legal content</td></tr>
+        <tr><td><code>/terms-of-service</code></td><td>Terms of Service</td><td>No</td><td><span class="tag tag-unchanged">None</span> — Static legal content</td></tr>
+    </table>
+
+    <!-- ============================================================ -->
+    <h2 class="page-break">3. Flow 1 — New User Registration and Onboarding</h2>
+
+    <h3>3.1 Current Flow (Supabase Auth)</h3>
+
+    <div class="flow-box current-flow">
+        <div class="flow-step">
+            <span class="step-num current">1</span>
+            <div class="step-content">
+                <strong>User navigates to <code>/auth</code></strong>
+                <p>Lands on a custom-built React form with email, password, and full name fields. Toggle between "Sign In" and "Create Account" modes via text link.</p>
+            </div>
+        </div>
+        <div class="flow-step">
+            <span class="step-num current">2</span>
+            <div class="step-content">
+                <strong>User submits signup form</strong>
+                <p>React calls <code>supabase.auth.signUp({ email, password, options: { data: { full_name } } })</code>. The full name is stored in Supabase's <code>raw_user_meta_data</code> JSON field on the auth user record.</p>
+            </div>
+        </div>
+        <div class="flow-step">
+            <span class="step-num current">3</span>
+            <div class="step-content">
+                <strong>Email confirmation</strong>
+                <p>Supabase sends a confirmation email via its built-in email service (limited to 4 emails/hour on free tier). User must click the confirmation link before the account is active.</p>
+            </div>
+        </div>
+        <div class="flow-step">
+            <span class="step-num current">4</span>
+            <div class="step-content">
+                <strong>Session established</strong>
+                <p>After confirmation, the Supabase client stores a JWT and refresh token in localStorage. The <code>useAuth</code> hook detects the session via <code>supabase.auth.onAuthStateChange</code> listener. User is redirected to <code>/dashboard</code>.</p>
+            </div>
+        </div>
+        <div class="flow-step">
+            <span class="step-num current">5</span>
+            <div class="step-content">
+                <strong>Dashboard loads</strong>
+                <p>Dashboard fetches resume status, AI usage count, and latest feedback/questions from Supabase PostgreSQL via the Supabase client SDK. Row-level security (RLS) policies ensure users can only read their own data.</p>
+            </div>
+        </div>
+    </div>
+
+    <h3>3.2 Proposed Flow (Clerk)</h3>
+
+    <div class="flow-box proposed-flow">
+        <div class="flow-step">
+            <span class="step-num proposed">1</span>
+            <div class="step-content">
+                <strong>User navigates to <code>/auth</code></strong>
+                <p>Lands on the same route, but the custom form is replaced by Clerk's pre-built <code>&lt;SignIn /&gt;</code> and <code>&lt;SignUp /&gt;</code> components. These are fully styled React components that handle email/password, social OAuth (Google, GitHub), and magic link authentication out of the box. The visual design is customised via Clerk's theming API to match Kraftworks branding.</p>
+            </div>
+        </div>
+        <div class="flow-step">
+            <span class="step-num proposed">2</span>
+            <div class="step-content">
+                <strong>User submits signup</strong>
+                <p>Clerk handles the entire signup flow — form validation, password strength enforcement, email verification — without custom code. The full name is captured as a Clerk user attribute. Clerk creates a user record in its managed user store and issues a session JWT.</p>
+            </div>
+        </div>
+        <div class="flow-step">
+            <span class="step-num proposed">3</span>
+            <div class="step-content">
+                <strong>Email verification</strong>
+                <p>Clerk sends a verification email via its production email infrastructure (no rate limits like Supabase's 4/hour free tier). Verification can be a magic link or a 6-digit OTP code — configurable in the Clerk dashboard.</p>
+            </div>
+        </div>
+        <div class="flow-step">
+            <span class="step-num proposed">4</span>
+            <div class="step-content">
+                <strong>Clerk webhook fires</strong>
+                <p>When the user is created, Clerk fires a <code>user.created</code> webhook to a Cloudflare Worker endpoint. The Worker creates a corresponding record in the D1 <code>users</code> table, syncing the Clerk user ID, email, and full name for local queries. This is a backend synchronisation step — invisible to the user.</p>
+            </div>
+        </div>
+        <div class="flow-step">
+            <span class="step-num proposed">5</span>
+            <div class="step-content">
+                <strong>Session established</strong>
+                <p>Clerk's React SDK (<code>@clerk/clerk-react</code>) manages the session automatically. The <code>useAuth</code> hook is refactored to use <code>useUser()</code> and <code>useAuth()</code> from Clerk's SDK instead of Supabase's <code>onAuthStateChange</code>. The user is redirected to <code>/dashboard</code>.</p>
+            </div>
+        </div>
+        <div class="flow-step">
+            <span class="step-num proposed">6</span>
+            <div class="step-content">
+                <strong>Dashboard loads</strong>
+                <p>Dashboard calls Cloudflare Worker API endpoints (instead of Supabase client SDK) with the Clerk session JWT in the Authorization header. Workers query D1 for resume status, AI usage, and feedback data. Access control is enforced at the Worker level by verifying the Clerk JWT — not via database-level RLS policies.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="delta-box">
+        <h4>What Changes for the User</h4>
+        <ul>
+            <li><strong>Visual:</strong> The login/signup form changes from a custom-built React form to Clerk's pre-built components. The layout is similar but more polished — includes social login buttons, better password strength indicators, and a smoother verification flow.</li>
+            <li><strong>Functional:</strong> Social login (Google, GitHub) becomes available without custom OAuth integration. Magic link login is an option. Email verification is more reliable (no 4/hour rate limit).</li>
+            <li><strong>Perceived speed:</strong> Dashboard data loading latency may change slightly because data now comes from Worker → D1 instead of Supabase client SDK → PostgreSQL. In practice, the difference is negligible or faster (D1 is at the edge).</li>
+        </ul>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 class="page-break">4. Flow 2 — Resume Upload and AI Feedback</h2>
+
+    <p>This is the core value flow of the platform. A trade graduate uploads their resume, receives AI-generated feedback, and the feedback is reviewed by an admin before the user sees it.</p>
+
+    <h3>4.1 Current Flow (Supabase + Lovable AI Gateway)</h3>
+
+    <div class="flow-box current-flow">
+        <div class="flow-step">
+            <span class="step-num current">1</span>
+            <div class="step-content">
+                <strong>User navigates to <code>/resume-review</code></strong>
+                <p>Protected route — <code>ProtectedRoute</code> component checks <code>useAuth</code> for active Supabase session. If no session, redirects to <code>/auth</code>.</p>
+            </div>
+        </div>
+        <div class="flow-step">
+            <span class="step-num current">2</span>
+            <div class="step-content">
+                <strong>User uploads a PDF resume</strong>
+                <p>The <code>useResume</code> hook handles file upload. The PDF is uploaded to Supabase Storage at path <code>resumes/{user_id}/{filename}</code>. A SHA-256 hash of the file content is computed client-side. A record is inserted into the <code>resumes</code> table with file metadata (file_name, file_path, file_size, file_hash, trade_program).</p>
+            </div>
+        </div>
+        <div class="flow-step">
+            <span class="step-num current">3</span>
+            <div class="step-content">
+                <strong>User clicks "Get Resume Feedback"</strong>
+                <p>The <code>useResumeFeedback</code> hook first calls <code>canRunAI()</code> from <code>useAIUsage</code> to check if the user has remaining quota. If quota is exhausted, the button is disabled and a message is shown.</p>
+            </div>
+        </div>
+        <div class="flow-step">
+            <span class="step-num current">4</span>
+            <div class="step-content">
+                <strong>Edge function invocation</strong>
+                <p>The hook calls <code>supabase.functions.invoke('generate-resume-feedback', { body: { resume_id } })</code>. The Supabase Edge Function (Deno runtime) receives the request, verifies the caller's JWT, checks quota in PostgreSQL, fetches resume metadata, builds the prompt, and calls the Lovable AI Gateway with model <code>gemini-2.5-flash-lite</code>.</p>
+            </div>
+        </div>
+        <div class="flow-step">
+            <span class="step-num current">5</span>
+            <div class="step-content">
+                <strong>AI response processing</strong>
+                <p>The edge function parses the tool-call JSON from the Gemini response. It extracts <code>overall_score</code>, <code>strengths</code>, <code>improvements</code>, <code>suggestions</code>, <code>trade_suggestions</code>, and <code>actionable_steps</code>. The function returns this data to the client.</p>
+            </div>
+        </div>
+        <div class="flow-step">
+            <span class="step-num current">6</span>
+            <div class="step-content">
+                <strong>Client-side persistence</strong>
+                <p>The <code>useResumeFeedback</code> hook receives the AI response and <strong>inserts the feedback record client-side</strong> via <code>supabase.from('resume_feedback').insert(...)</code> with <code>status: 'pending_review'</code>. The hook also calls <code>recordAIUsage()</code> to insert an AI usage record. Note: the persistence happens on the client, not in the edge function.</p>
+            </div>
+        </div>
+        <div class="flow-step">
+            <span class="step-num current">7</span>
+            <div class="step-content">
+                <strong>Admin notification (stub)</strong>
+                <p>The edge function fires a request to <code>notify-admin-resume</code> as a fire-and-forget call. This function currently returns immediately with a stub response — no actual email is sent. Admins must check the admin panel manually to discover new feedback submissions.</p>
+            </div>
+        </div>
+        <div class="flow-step">
+            <span class="step-num current">8</span>
+            <div class="step-content">
+                <strong>User sees "Pending Review" state</strong>
+                <p>The dashboard and Resume Review page show the feedback status as "Pending Review" with a clock icon. The user cannot see the AI-generated content until an admin approves it.</p>
+            </div>
+        </div>
+    </div>
+
+    <h3>4.2 Proposed Flow (Clerk + Cloudflare Workers + D1 + OpenRouter + Resend)</h3>
+
+    <div class="flow-box proposed-flow">
+        <div class="flow-step">
+            <span class="step-num proposed">1</span>
+            <div class="step-content">
+                <strong>User navigates to <code>/resume-review</code></strong>
+                <p>Protected route — Clerk's <code>&lt;SignedIn /&gt;</code> / <code>&lt;SignedOut /&gt;</code> components or the <code>useAuth()</code> hook (from Clerk SDK) gates access. Functionally identical to the user.</p>
+            </div>
+        </div>
+        <div class="flow-step">
+            <span class="step-num proposed">2</span>
+            <div class="step-content">
+                <strong>User uploads a PDF resume</strong>
+                <p>The <code>useResume</code> hook is refactored to upload the PDF to a Cloudflare Worker endpoint instead of Supabase Storage. The Worker stores the file in Cloudflare R2 at key <code>resumes/{clerk_user_id}/{filename}</code> and inserts the resume record into D1. SHA-256 hash is still computed client-side and sent with the upload.</p>
+            </div>
+        </div>
+        <div class="flow-step">
+            <span class="step-num proposed">3</span>
+            <div class="step-content">
+                <strong>User clicks "Get Resume Feedback"</strong>
+                <p>Same UX — the button is disabled if quota is exhausted. The quota check is now performed by calling a Worker endpoint that queries D1 instead of querying Supabase PostgreSQL directly from the client.</p>
+            </div>
+        </div>
+        <div class="flow-step">
+            <span class="step-num proposed">4</span>
+            <div class="step-content">
+                <strong>Worker receives request, dispatches Workflow</strong>
+                <p>The client sends a POST to the <code>generate-resume-feedback</code> Worker with the Clerk JWT and <code>resume_id</code>. The Worker verifies the JWT using Clerk's JWKS, then dispatches a Cloudflare Workflow — a durable, multi-step execution sequence. The Worker returns immediately with a 202 Accepted or waits for workflow completion (configurable).</p>
+            </div>
+        </div>
+        <div class="flow-step">
+            <span class="step-num proposed">5</span>
+            <div class="step-content">
+                <strong>Workflow executes 6 durable steps</strong>
+                <p><strong>Step 1:</strong> Validate ownership, quota, deduplication against D1. <strong>Step 2:</strong> Fetch resume metadata and trade context from D1. <strong>Step 3:</strong> Send structured prompt to OpenRouter (model: <code>google/gemini-2.5-flash</code>) with forced tool-call schema. <strong>Step 4:</strong> Normalise the AI response (clamp score, validate arrays). <strong>Step 5:</strong> Write feedback + usage records to D1 in a single transaction. <strong>Step 6:</strong> Send admin notification email via Resend.</p>
+            </div>
+        </div>
+        <div class="flow-step">
+            <span class="step-num proposed">6</span>
+            <div class="step-content">
+                <strong>Persistence is server-side</strong>
+                <p>Unlike the current system where the client inserts the feedback record, persistence now happens entirely within the Cloudflare Workflow. The client receives a response only after the feedback is durably stored. This eliminates the race condition where the client could fail to persist after a successful AI call.</p>
+            </div>
+        </div>
+        <div class="flow-step">
+            <span class="step-num proposed">7</span>
+            <div class="step-content">
+                <strong>Admin receives real email</strong>
+                <p>Resend delivers a production-grade transactional email to the admin with user details, trade program, and a direct link to the admin panel. This replaces the current stub notification. Admins no longer need to manually check the panel — they are proactively notified.</p>
+            </div>
+        </div>
+        <div class="flow-step">
+            <span class="step-num proposed">8</span>
+            <div class="step-content">
+                <strong>User sees "Pending Review" state</strong>
+                <p>Identical to current UX. The user sees the same pending state, same clock icon, same messaging. The admin approval gate is unchanged.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="delta-box">
+        <h4>What Changes for the User</h4>
+        <ul>
+            <li><strong>Visual:</strong> Nothing changes. The page looks identical.</li>
+            <li><strong>Functional:</strong> The AI model switches from Gemini 2.5 Flash Lite (via Lovable Gateway) to Gemini 2.5 Flash (via OpenRouter) — slightly higher quality output. Feedback quality may improve due to better model and improved prompt engineering.</li>
+            <li><strong>Reliability:</strong> Significantly improved. The current flow has a single-point-of-failure: if the client crashes after the AI call but before the database insert, the user loses their quota with no feedback saved. The proposed Workflow eliminates this — persistence is server-side and durable.</li>
+            <li><strong>Admin experience:</strong> Admins now receive email notifications instead of having to poll the admin panel. This reduces the time between submission and review.</li>
+        </ul>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 class="page-break">5. Flow 3 — Interview Question Generation</h2>
+
+    <h3>5.1 Current Flow</h3>
+
+    <div class="flow-box current-flow">
+        <div class="flow-step">
+            <span class="step-num current">1</span>
+            <div class="step-content">
+                <strong>User navigates to <code>/interview-prep</code></strong>
+                <p>Protected route. Page displays a textarea for the job description, a note about resume being required, and the remaining AI action count.</p>
+            </div>
+        </div>
+        <div class="flow-step">
+            <span class="step-num current">2</span>
+            <div class="step-content">
+                <strong>User pastes job description and clicks "Generate Questions"</strong>
+                <p>Client validates that a resume exists (required for context) and that quota is available.</p>
+            </div>
+        </div>
+        <div class="flow-step">
+            <span class="step-num current">3</span>
+            <div class="step-content">
+                <strong>Edge function processes</strong>
+                <p>The <code>generate-questions</code> Supabase Edge Function validates the job description (min 10 chars, max 2000), fetches resume context, checks quota, builds the prompt, and calls Lovable AI Gateway with model <code>gemini-3-flash-preview</code>. The function computes a SHA-256 hash for deduplication and persists the question set to <code>interview_questions</code> server-side.</p>
+            </div>
+        </div>
+        <div class="flow-step">
+            <span class="step-num current">4</span>
+            <div class="step-content">
+                <strong>Questions returned immediately</strong>
+                <p>Unlike resume feedback, questions are returned directly to the user without admin review. The page displays three categorised sections: Technical, Behavioural, and Situational questions.</p>
+            </div>
+        </div>
+    </div>
+
+    <h3>5.2 Proposed Flow</h3>
+
+    <div class="flow-box proposed-flow">
+        <div class="flow-step">
+            <span class="step-num proposed">1</span>
+            <div class="step-content">
+                <strong>User navigates to <code>/interview-prep</code></strong>
+                <p>Same protected route, now gated by Clerk session instead of Supabase session. Interface identical.</p>
+            </div>
+        </div>
+        <div class="flow-step">
+            <span class="step-num proposed">2</span>
+            <div class="step-content">
+                <strong>User pastes job description and clicks "Generate Questions"</strong>
+                <p>Same client-side validation. Request sent to Cloudflare Worker with Clerk JWT.</p>
+            </div>
+        </div>
+        <div class="flow-step">
+            <span class="step-num proposed">3</span>
+            <div class="step-content">
+                <strong>Worker dispatches interview question Workflow</strong>
+                <p>5-step durable Workflow: validate → enrich context → call OpenRouter (<code>google/gemini-2.5-flash</code>) with Bloom's-aligned prompt → normalise + persist to D1 → return questions. Each step retries independently on failure.</p>
+            </div>
+        </div>
+        <div class="flow-step">
+            <span class="step-num proposed">4</span>
+            <div class="step-content">
+                <strong>Questions returned immediately</strong>
+                <p>Same immediate delivery. No admin review gate. Interface shows the same three-category layout.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="delta-box">
+        <h4>What Changes for the User</h4>
+        <ul>
+            <li><strong>Visual:</strong> Nothing. Same page, same categories, same question display.</li>
+            <li><strong>Functional:</strong> AI model changes from <code>gemini-3-flash-preview</code> (preview quality, potentially unstable) to <code>google/gemini-2.5-flash</code> (production model via OpenRouter). Question prompts are now explicitly aligned to Bloom's Taxonomy levels, which may produce more systematically varied questions.</li>
+            <li><strong>Reliability:</strong> Improved. If the AI call succeeds but the database write fails, the Workflow retries only the write — the user always gets their questions without burning an extra AI call.</li>
+        </ul>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 class="page-break">6. Flow 4 — Admin Review Workflow</h2>
+
+    <h3>6.1 Current Flow</h3>
+
+    <div class="flow-box current-flow">
+        <div class="flow-step">
+            <span class="step-num current">1</span>
+            <div class="step-content">
+                <strong>Admin navigates to <code>/admin</code></strong>
+                <p>The <code>useAdminRole</code> hook queries the <code>user_roles</code> table in Supabase PostgreSQL to check if the current user has the 'admin' role. If not, the page shows an access denied message.</p>
+            </div>
+        </div>
+        <div class="flow-step">
+            <span class="step-num current">2</span>
+            <div class="step-content">
+                <strong>Admin views pending feedback</strong>
+                <p>The "Resume Feedback" tab fetches all records from <code>resume_feedback</code> ordered by creation date. Each record shows the user's email, trade program, score, status badge, and action buttons. Admins must manually navigate to this panel to discover new submissions — there is no email notification.</p>
+            </div>
+        </div>
+        <div class="flow-step">
+            <span class="step-num current">3</span>
+            <div class="step-content">
+                <strong>Admin approves, edits, or rejects</strong>
+                <p>Clicking a status button updates the <code>status</code> field in <code>resume_feedback</code> via a direct Supabase client update. The admin can also edit feedback fields (score, strengths, improvements) in a dialog. All operations are direct client-to-database writes — no server-side validation.</p>
+            </div>
+        </div>
+        <div class="flow-step">
+            <span class="step-num current">4</span>
+            <div class="step-content">
+                <strong>User sees approved feedback</strong>
+                <p>Once the status changes to 'approved', the user's next Dashboard or Resume Review page load fetches the updated record. The feedback (score, strengths, improvements, trade suggestions) is now visible.</p>
+            </div>
+        </div>
+    </div>
+
+    <h3>6.2 Proposed Flow</h3>
+
+    <div class="flow-box proposed-flow">
+        <div class="flow-step">
+            <span class="step-num proposed">1</span>
+            <div class="step-content">
+                <strong>Admin receives Resend email notification</strong>
+                <p>When a user generates resume feedback, the Workflow sends a transactional email to the admin with: user name, trade program, resume filename, submission time, and a direct link to <code>/admin?tab=feedback&id={feedback_id}</code>. The admin is <strong>proactively notified</strong> instead of having to poll.</p>
+            </div>
+        </div>
+        <div class="flow-step">
+            <span class="step-num proposed">2</span>
+            <div class="step-content">
+                <strong>Admin navigates to <code>/admin</code></strong>
+                <p>Role check is now performed by verifying the Clerk JWT's organisation role or by querying the D1 <code>user_roles</code> table via a Worker endpoint. The admin panel UI is identical.</p>
+            </div>
+        </div>
+        <div class="flow-step">
+            <span class="step-num proposed">3</span>
+            <div class="step-content">
+                <strong>Admin approves, edits, or rejects</strong>
+                <p>Status updates are now sent to a Cloudflare Worker endpoint (not direct client-to-database). The Worker validates the admin's Clerk JWT and role, then updates D1. This adds server-side authorisation — in the current system, any user who knows the table structure could potentially modify feedback status directly via the Supabase client (even with RLS, this is a broader attack surface than a Worker with explicit role checks).</p>
+            </div>
+        </div>
+        <div class="flow-step">
+            <span class="step-num proposed">4</span>
+            <div class="step-content">
+                <strong>Optional: User receives email on approval</strong>
+                <p>When the admin approves feedback, the Worker can trigger a Resend email to the user: "Your resume feedback is ready! Log in to view your results." This is a new capability that does not exist in the current system.</p>
+            </div>
+        </div>
+        <div class="flow-step">
+            <span class="step-num proposed">5</span>
+            <div class="step-content">
+                <strong>User sees approved feedback</strong>
+                <p>Same as current — feedback becomes visible on next page load after approval.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="delta-box">
+        <h4>What Changes for the User and Admin</h4>
+        <ul>
+            <li><strong>Admin notification:</strong> Admins receive proactive email notifications instead of manually checking the panel. This is the single biggest operational improvement — it reduces time-to-review from "whenever the admin remembers to check" to "minutes after submission."</li>
+            <li><strong>Security:</strong> Admin operations go through a Worker with explicit JWT + role verification. In the current system, admin operations are client-to-database with RLS — functional but a broader trust surface.</li>
+            <li><strong>User notification (new):</strong> Users can optionally receive an email when their feedback is approved. This closes the loop — currently, users must log back in and manually check.</li>
+        </ul>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 class="page-break">7. Flow 5 — Waitlist Signup (Trade Graduate and Employer)</h2>
+
+    <h3>7.1 Current Flow</h3>
+
+    <div class="flow-box current-flow">
+        <div class="flow-step">
+            <span class="step-num current">1</span>
+            <div class="step-content">
+                <strong>Visitor navigates to <code>/waitlist</code></strong>
+                <p>Public page with two modes: "Trade Graduate" (6 fields: full name, email, trade program dropdown, state, city, consent checkbox) and "Employer" (8 fields: full name, job title, company email, trades hiring for, hiring volume, state, city, consent checkbox). Mode toggle via tab-style buttons.</p>
+            </div>
+        </div>
+        <div class="flow-step">
+            <span class="step-num current">2</span>
+            <div class="step-content">
+                <strong>Visitor submits form</strong>
+                <p>The React component inserts directly into <code>trade_grad_waitlist</code> or <code>employer_waitlist</code> via the Supabase client SDK: <code>supabase.from('trade_grad_waitlist').insert({...})</code>. This is a direct client-to-database write — no server-side validation beyond Supabase column constraints.</p>
+            </div>
+        </div>
+        <div class="flow-step">
+            <span class="step-num current">3</span>
+            <div class="step-content">
+                <strong>Success toast</strong>
+                <p>A toast notification appears: "You've been added to the waitlist!" No confirmation email is sent. No admin notification is sent.</p>
+            </div>
+        </div>
+    </div>
+
+    <h3>7.2 Proposed Flow</h3>
+
+    <div class="flow-box proposed-flow">
+        <div class="flow-step">
+            <span class="step-num proposed">1</span>
+            <div class="step-content">
+                <strong>Visitor navigates to <code>/waitlist</code></strong>
+                <p>Same page, same two modes, same fields. No visual change.</p>
+            </div>
+        </div>
+        <div class="flow-step">
+            <span class="step-num proposed">2</span>
+            <div class="step-content">
+                <strong>Visitor submits form</strong>
+                <p>The React component sends the form data to a Cloudflare Worker endpoint via HTTP POST. The Worker performs server-side validation (email format, required fields, consent = true) and inserts into the appropriate D1 table. Server-side validation means malicious clients cannot bypass form rules by calling the API directly.</p>
+            </div>
+        </div>
+        <div class="flow-step">
+            <span class="step-num proposed">3</span>
+            <div class="step-content">
+                <strong>Confirmation email via Resend</strong>
+                <p>The Worker sends a confirmation email to the visitor: "Thanks for joining the Kraftworks waitlist! We'll notify you when your spot is ready." This is a new capability — currently, no email is sent.</p>
+            </div>
+        </div>
+        <div class="flow-step">
+            <span class="step-num proposed">4</span>
+            <div class="step-content">
+                <strong>Admin notification email (optional)</strong>
+                <p>The Worker can optionally send a summary email to the admin when new waitlist entries arrive — either individually or as a daily digest. This gives the team visibility into lead flow without checking the admin panel.</p>
+            </div>
+        </div>
+        <div class="flow-step">
+            <span class="step-num proposed">5</span>
+            <div class="step-content">
+                <strong>Success toast</strong>
+                <p>Same toast as current, plus the user receives a confirmation email.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="delta-box">
+        <h4>What Changes for the Visitor</h4>
+        <ul>
+            <li><strong>Visual:</strong> Nothing changes on the page itself.</li>
+            <li><strong>Functional:</strong> Visitors now receive a confirmation email — a professional touch that the current system lacks. Form validation is now server-side (not just client-side), which prevents abuse via direct API calls.</li>
+            <li><strong>Security:</strong> Moving from client-side Supabase inserts to Worker-mediated inserts eliminates the exposure of the database write endpoint to the public internet via the Supabase client SDK.</li>
+        </ul>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 class="page-break">8. Flow 6 — Dashboard Overview</h2>
+
+    <h3>8.1 Current Flow</h3>
+
+    <div class="flow-box current-flow">
+        <div class="flow-step">
+            <span class="step-num current">1</span>
+            <div class="step-content">
+                <strong>Authenticated user loads <code>/dashboard</code></strong>
+                <p>The dashboard makes 4+ parallel queries via the Supabase client SDK:</p>
+                <ul style="margin-top: 6px; font-size: 12px; color: var(--text-muted);">
+                    <li><code>useResume</code>: Fetches the user's resume record from <code>resumes</code> table.</li>
+                    <li><code>useAIUsage</code>: Counts AI usage records to compute remaining quota.</li>
+                    <li><code>useResumeFeedback</code>: Fetches latest feedback record for the current resume.</li>
+                    <li>Direct query: Fetches latest interview question set from <code>interview_questions</code>.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="flow-step">
+            <span class="step-num current">2</span>
+            <div class="step-content">
+                <strong>Dashboard renders 3 cards</strong>
+                <p><strong>Resume Card:</strong> Shows upload state (no resume / uploaded with filename). <strong>AI Actions Card:</strong> Shows usage progress bar (used/max) and remaining count. <strong>Feedback Card:</strong> Shows latest feedback status (pending/approved) and score if approved. <strong>Interview Card:</strong> Shows latest question count and generation date.</p>
+            </div>
+        </div>
+    </div>
+
+    <h3>8.2 Proposed Flow</h3>
+
+    <div class="flow-box proposed-flow">
+        <div class="flow-step">
+            <span class="step-num proposed">1</span>
+            <div class="step-content">
+                <strong>Authenticated user loads <code>/dashboard</code></strong>
+                <p>The dashboard calls a single Cloudflare Worker endpoint: <code>GET /api/dashboard-summary</code> with the Clerk JWT. The Worker queries D1 for resume, usage, feedback, and interview data in a single database roundtrip (D1 supports batch queries). This replaces 4 separate client-to-database roundtrips with 1 client-to-Worker request.</p>
+            </div>
+        </div>
+        <div class="flow-step">
+            <span class="step-num proposed">2</span>
+            <div class="step-content">
+                <strong>Dashboard renders same 3 cards</strong>
+                <p>Identical UI. The data shape is the same — only the source changes. TanStack Query caches the response identically regardless of whether it came from Supabase or a Worker.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="delta-box">
+        <h4>What Changes for the User</h4>
+        <ul>
+            <li><strong>Visual:</strong> Nothing.</li>
+            <li><strong>Performance:</strong> Potentially faster. 4 parallel client-to-Supabase requests are replaced by 1 client-to-Worker request that batch-queries D1 at the edge. Fewer network roundtrips = faster dashboard load, especially on slower connections.</li>
+        </ul>
+    </div>
+
+    <!-- ============================================================ -->
+    <h2 class="page-break">9. Flow 7 — Static Content Pages (No Backend Change)</h2>
+
+    <p>The following pages involve no backend interaction and are completely unaffected by the migration:</p>
+
+    <table>
+        <tr><th>Page</th><th>Route</th><th>Content Source</th><th>Change Impact</th></tr>
+        <tr><td>Landing</td><td><code>/</code></td><td>React components with static content.</td><td><span class="tag tag-unchanged">None</span></td></tr>
+        <tr><td>Career Toolkit Hub</td><td><code>/career-toolkit</code></td><td>Static cards linking to trade-specific pages.</td><td><span class="tag tag-unchanged">None</span></td></tr>
+        <tr><td>HVAC Toolkit</td><td><code>/career-toolkit/hvac</code></td><td>Static accordion content, salary data, career paths.</td><td><span class="tag tag-unchanged">None</span></td></tr>
+        <tr><td>Electrical Toolkit</td><td><code>/career-toolkit/electrical</code></td><td>Static accordion content.</td><td><span class="tag tag-unchanged">None</span></td></tr>
+        <tr><td>Welding Toolkit</td><td><code>/career-toolkit/welding</code></td><td>Static accordion content.</td><td><span class="tag tag-unchanged">None</span></td></tr>
+        <tr><td>Blog Listing</td><td><code>/blog</code></td><td>Client-side data from <code>src/data/articles.ts</code>.</td><td><span class="tag tag-unchanged">None</span></td></tr>
+        <tr><td>Article Page</td><td><code>/blog/:slug</code></td><td>Client-side article lookup by slug.</td><td><span class="tag tag-unchanged">None</span></td></tr>
+        <tr><td>Career Fair</td><td><code>/career-fair</code></td><td>Static promotional content.</td><td><span class="tag tag-unchanged">None</span></td></tr>
+        <tr><td>Privacy Policy</td><td><code>/privacy-policy</code></td><td>Static legal content.</td><td><span class="tag tag-unchanged">None</span></td></tr>
+        <tr><td>Terms of Service</td><td><code>/terms-of-service</code></td><td>Static legal content.</td><td><span class="tag tag-unchanged">None</span></td></tr>
+    </table>
+
+    <!-- ============================================================ -->
+    <h2 class="page-break">10. Summary: Side-by-Side Comparison Table</h2>
+
+    <table>
+        <tr>
+            <th>Aspect</th>
+            <th>Current (Supabase)</th>
+            <th>Proposed (Clerk + Cloudflare + OpenRouter + Resend)</th>
+        </tr>
+        <tr>
+            <td><strong>Authentication UI</strong></td>
+            <td>Custom React form (email + password only).</td>
+            <td>Clerk pre-built components (email, social OAuth, magic link).</td>
+        </tr>
+        <tr>
+            <td><strong>Session Management</strong></td>
+            <td>Supabase JWT in localStorage. <code>onAuthStateChange</code> listener.</td>
+            <td>Clerk managed sessions. <code>@clerk/clerk-react</code> hooks.</td>
+        </tr>
+        <tr>
+            <td><strong>Data Fetching</strong></td>
+            <td>Supabase client SDK directly queries PostgreSQL. Multiple parallel requests from client.</td>
+            <td>Cloudflare Workers as API layer. Batch queries to D1. Single request for dashboard data.</td>
+        </tr>
+        <tr>
+            <td><strong>AI Inference</strong></td>
+            <td>Lovable AI Gateway → Gemini Flash Lite / Gemini 3 Flash Preview.</td>
+            <td>OpenRouter → model-configurable (Gemini Flash, Claude Haiku, Llama). With durable retry via Workflows.</td>
+        </tr>
+        <tr>
+            <td><strong>AI Pipeline Durability</strong></td>
+            <td>Single edge function call. If it fails, the entire operation fails. Client-side persistence for resume feedback.</td>
+            <td>Cloudflare Workflow with step-level durability. Server-side persistence. Individual step retry.</td>
+        </tr>
+        <tr>
+            <td><strong>File Storage</strong></td>
+            <td>Supabase Storage with RLS-scoped paths.</td>
+            <td>Cloudflare R2 with Worker-enforced access control.</td>
+        </tr>
+        <tr>
+            <td><strong>Admin Notifications</strong></td>
+            <td>Stub function — no email sent. Admins poll manually.</td>
+            <td>Resend transactional email with direct admin panel links.</td>
+        </tr>
+        <tr>
+            <td><strong>User Notifications</strong></td>
+            <td>None beyond Supabase confirmation email at signup.</td>
+            <td>Resend emails for: waitlist confirmation, feedback approval notification (new).</td>
+        </tr>
+        <tr>
+            <td><strong>Authorisation Model</strong></td>
+            <td>PostgreSQL RLS policies + client-side <code>user_roles</code> query.</td>
+            <td>Clerk JWT verification + Worker middleware role checks against D1. No direct client-to-database access.</td>
+        </tr>
+        <tr>
+            <td><strong>Waitlist Forms</strong></td>
+            <td>Direct client-to-Supabase insert. No server validation. No confirmation email.</td>
+            <td>Worker-mediated insert with server-side validation. Confirmation email via Resend.</td>
+        </tr>
+        <tr>
+            <td><strong>Contact Form</strong></td>
+            <td>Client-side only or Supabase insert. No email delivery.</td>
+            <td>Worker receives submission, stores in D1, sends email via Resend to admin and confirmation to user.</td>
+        </tr>
+        <tr>
+            <td><strong>Error Handling</strong></td>
+            <td>Toast notifications from caught client-side exceptions.</td>
+            <td>Same toast UI, but errors are more structured — Workers return typed error responses. Workflows provide durable retry for transient failures.</td>
+        </tr>
+        <tr>
+            <td><strong>Offline / Network Failure</strong></td>
+            <td>Client-side operations fail silently or show generic error toasts.</td>
+            <td>Same client behaviour, but server-side durability means in-flight AI operations complete even if the client disconnects (Workflow continues independently).</td>
+        </tr>
+    </table>
+
+    <!-- ============================================================ -->
+    <h2>11. Client-Side Hook Migration Map</h2>
+
+    <p>The following table shows how each React hook changes in the proposed architecture. This is the primary engineering surface area for the frontend migration.</p>
+
+    <table>
+        <tr><th>Hook</th><th>Current Implementation</th><th>Proposed Implementation</th><th>Change Scope</th></tr>
+        <tr>
+            <td><code>useAuth</code></td>
+            <td>Wraps <code>supabase.auth.onAuthStateChange</code>. Returns <code>user</code>, <code>session</code>, <code>loading</code>, <code>signOut</code>.</td>
+            <td>Wraps Clerk's <code>useUser()</code> and <code>useAuth()</code>. Returns the same interface. <code>signOut</code> calls <code>clerk.signOut()</code>.</td>
+            <td><span class="tag tag-proposed">Rewrite</span></td>
+        </tr>
+        <tr>
+            <td><code>useResume</code></td>
+            <td>Queries <code>supabase.from('resumes')</code>. Uploads to Supabase Storage via <code>supabase.storage.from('resumes').upload()</code>.</td>
+            <td>Calls Worker API endpoints. Upload via <code>POST /api/resumes/upload</code> (Worker stores in R2). Fetch via <code>GET /api/resumes</code>.</td>
+            <td><span class="tag tag-proposed">Rewrite</span></td>
+        </tr>
+        <tr>
+            <td><code>useResumeFeedback</code></td>
+            <td>Queries <code>supabase.from('resume_feedback')</code>. Invokes <code>supabase.functions.invoke('generate-resume-feedback')</code>. <strong>Client-side insert</strong> after AI response.</td>
+            <td>Calls <code>POST /api/resume-feedback/generate</code> (Worker). Server-side persistence via Workflow. Fetch via <code>GET /api/resume-feedback</code>.</td>
+            <td><span class="tag tag-proposed">Rewrite</span></td>
+        </tr>
+        <tr>
+            <td><code>useAIUsage</code></td>
+            <td>Queries <code>supabase.from('ai_usage')</code> and counts records client-side.</td>
+            <td>Calls <code>GET /api/ai-usage</code> (Worker). Count computed server-side.</td>
+            <td><span class="tag tag-proposed">Rewrite</span></td>
+        </tr>
+        <tr>
+            <td><code>useAdminRole</code></td>
+            <td>Queries <code>supabase.from('user_roles')</code> for current user.</td>
+            <td>Calls <code>GET /api/admin/verify</code> (Worker). Or reads Clerk organisation roles directly from the Clerk session.</td>
+            <td><span class="tag tag-proposed">Rewrite</span></td>
+        </tr>
+        <tr>
+            <td><code>use-toast</code></td>
+            <td>Client-side toast state management via sonner.</td>
+            <td>Unchanged.</td>
+            <td><span class="tag tag-unchanged">None</span></td>
+        </tr>
+        <tr>
+            <td><code>use-mobile</code></td>
+            <td>Client-side viewport detection.</td>
+            <td>Unchanged.</td>
+            <td><span class="tag tag-unchanged">None</span></td>
+        </tr>
+    </table>
+
+</div>
+
+</body>
+</html>

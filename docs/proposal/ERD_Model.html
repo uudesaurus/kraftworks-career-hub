@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kraftworks Career Hub — ERD Model and Data Interaction Reference</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --navy: #10233f;
+            --blue: #1f5eff;
+            --blue-soft: #eaf1ff;
+            --teal: #0f766e;
+            --teal-soft: #ccfbf1;
+            --amber: #b7791f;
+            --amber-soft: #fff7e8;
+            --red: #b42318;
+            --red-soft: #fef3f2;
+            --ink: #1e293b;
+            --muted: #64748b;
+            --line: #d9e2ec;
+            --surface: #f8fafc;
+            --white: #ffffff;
+            --success: #15803d;
+            --success-soft: #dcfce7;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--ink);
+            background: var(--white);
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        .page {
+            max-width: 1120px;
+            margin: 0 auto;
+            padding: 48px 40px 72px;
+        }
+
+        h1 {
+            font-size: 30px;
+            font-weight: 700;
+            color: var(--navy);
+            margin-bottom: 8px;
+        }
+
+        h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--blue);
+            margin-top: 40px;
+            margin-bottom: 14px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--blue);
+        }
+
+        h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--navy);
+            margin-top: 24px;
+            margin-bottom: 10px;
+        }
+
+        p {
+            margin-bottom: 12px;
+        }
+
+        ul, ol {
+            margin: 8px 0 16px 22px;
+        }
+
+        li {
+            margin-bottom: 6px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0 24px;
+            font-size: 13px;
+        }
+
+        th, td {
+            border: 1px solid var(--line);
+            padding: 10px 12px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            background: var(--navy);
+            color: var(--white);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        tr:nth-child(even) td {
+            background: var(--surface);
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: var(--muted);
+            margin-bottom: 8px;
+        }
+
+        .meta {
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 28px;
+        }
+
+        .box {
+            border: 1px solid var(--line);
+            border-left: 5px solid var(--blue);
+            background: var(--blue-soft);
+            border-radius: 12px;
+            padding: 16px 18px;
+            margin: 16px 0;
+        }
+
+        .box.teal {
+            border-left-color: var(--teal);
+            background: var(--teal-soft);
+        }
+
+        .box.amber {
+            border-left-color: var(--amber);
+            background: var(--amber-soft);
+        }
+
+        .box.red {
+            border-left-color: var(--red);
+            background: var(--red-soft);
+        }
+
+        .pill {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            margin-right: 8px;
+        }
+
+        .pill-core {
+            background: var(--blue-soft);
+            color: var(--blue);
+        }
+
+        .pill-public {
+            background: var(--teal-soft);
+            color: var(--teal);
+        }
+
+        .pill-ops {
+            background: var(--amber-soft);
+            color: var(--amber);
+        }
+
+        .pill-optional {
+            background: var(--red-soft);
+            color: var(--red);
+        }
+
+        code {
+            background: #f1f5f9;
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-family: 'SF Mono', Menlo, Consolas, monospace;
+        }
+
+        .section-note {
+            color: var(--muted);
+            font-size: 12px;
+            margin-bottom: 10px;
+        }
+
+        @media print {
+            .page {
+                padding: 24px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            h2 {
+                font-size: 17px;
+            }
+
+            table {
+                font-size: 11px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+    <h1>Kraftworks Career Hub — ERD Model and Data Interaction Reference</h1>
+    <p class="subtitle">Standalone entity relationship and data lifecycle document for the proposed Clerk + Cloudflare + OpenRouter + Resend architecture</p>
+    <p class="meta">This document is intentionally diagram-free. It expresses the ERD as a rigorous narrative data model, including entities, keys, constraints, lifecycle relationships, and integration boundaries.</p>
+
+    <div class="box">
+        <p><strong>Purpose.</strong> This document defines the canonical data model for the proposed backend. It explains which records exist, why they exist, which services own them, how they relate to one another, and how data moves across authentication, storage, AI pipelines, admin review, waitlist capture, and email delivery.</p>
+    </div>
+
+    <h2>1. Modeling Scope</h2>
+    <p>The proposed backend architecture splits the overall system into five data domains. Thinking in these domains makes the ERD easier to reason about than treating every record as a flat table list.</p>
+
+    <table>
+        <tr>
+            <th>Domain</th>
+            <th>Responsibility</th>
+            <th>Primary System</th>
+            <th>Persistence Type</th>
+        </tr>
+        <tr>
+            <td>Identity</td>
+            <td>User authentication, session issuance, external source of truth for account identity.</td>
+            <td>Clerk</td>
+            <td>External managed identity service</td>
+        </tr>
+        <tr>
+            <td>Operational Core</td>
+            <td>User records, resumes, feedback, interview questions, roles, quota tracking.</td>
+            <td>Cloudflare D1</td>
+            <td>Relational tables</td>
+        </tr>
+        <tr>
+            <td>File Storage</td>
+            <td>Resume PDF binaries and storage metadata references.</td>
+            <td>Cloudflare R2</td>
+            <td>Object storage</td>
+        </tr>
+        <tr>
+            <td>AI Execution</td>
+            <td>Inference requests and structured outputs generated by LLMs.</td>
+            <td>OpenRouter via Cloudflare Workflows</td>
+            <td>Ephemeral execution + durable result persistence in D1</td>
+        </tr>
+        <tr>
+            <td>Communications</td>
+            <td>Admin notifications, user confirmations, operational email flows.</td>
+            <td>Resend</td>
+            <td>External delivery system with optional mirrored records in D1</td>
+        </tr>
+    </table>
+
+    <h2>2. Current-to-Proposed Data Baseline</h2>
+    <p>The current codebase uses Supabase PostgreSQL and already has a mature shape. The proposed model preserves that product logic but relocates ownership from Supabase to Clerk, Cloudflare D1, R2, Workflows, and Resend.</p>
+
+    <table>
+        <tr>
+            <th>Current Supabase Object</th>
+            <th>Proposed Ownership</th>
+            <th>Notes</th>
+        </tr>
+        <tr>
+            <td><code>auth.users</code> + metadata</td>
+            <td>Clerk + mirrored <code>users</code> table in D1</td>
+            <td>Clerk remains the source of truth. D1 stores a query-friendly projection for business logic.</td>
+        </tr>
+        <tr>
+            <td><code>resumes</code></td>
+            <td><code>resumes</code> in D1 + binary in R2</td>
+            <td>Metadata remains relational. PDF bytes move to R2.</td>
+        </tr>
+        <tr>
+            <td><code>resume_feedback</code></td>
+            <td><code>resume_feedback</code> in D1</td>
+            <td>Same business meaning, deeper review metadata recommended.</td>
+        </tr>
+        <tr>
+            <td><code>interview_questions</code></td>
+            <td><code>interview_questions</code> in D1</td>
+            <td>Same business meaning, model metadata recommended.</td>
+        </tr>
+        <tr>
+            <td><code>ai_usage</code></td>
+            <td><code>ai_usage</code> in D1</td>
+            <td>Still handles quota and deduplication, now tied to Workflow execution IDs.</td>
+        </tr>
+        <tr>
+            <td><code>user_roles</code></td>
+            <td><code>user_roles</code> in D1, optionally synced from Clerk org roles</td>
+            <td>Admin gating should remain explicitly queryable inside Worker middleware.</td>
+        </tr>
+        <tr>
+            <td><code>trade_grad_waitlist</code></td>
+            <td><code>trade_grad_waitlist</code> in D1</td>
+            <td>Still public, unauthenticated acquisition data.</td>
+        </tr>
+        <tr>
+            <td><code>employer_waitlist</code></td>
+            <td><code>employer_waitlist</code> in D1</td>
+            <td>Still public, unauthenticated demand capture.</td>
+        </tr>
+    </table>
+
+    <h2>3. Canonical Proposed Entity Set</h2>
+    <p class="section-note">Entities are grouped by whether they are core to launch, public acquisition records, operational governance records, or optional-but-recommended support records.</p>
+
+    <p>
+        <span class="pill pill-core">Core</span>
+        <span class="pill pill-public">Public</span>
+        <span class="pill pill-ops">Operations</span>
+        <span class="pill pill-optional">Optional</span>
+    </p>
+
+    <table>
+        <tr>
+            <th>Entity</th>
+            <th>Classification</th>
+            <th>Purpose</th>
+            <th>Owner</th>
+        </tr>
+        <tr><td><code>users</code></td><td>Core</td><td>Local mirrored user identity for backend joins and user-scoped queries.</td><td>D1, synced from Clerk</td></tr>
+        <tr><td><code>user_roles</code></td><td>Core</td><td>Application-level authorisation and admin gating.</td><td>D1</td></tr>
+        <tr><td><code>resumes</code></td><td>Core</td><td>Canonical resume metadata and R2 object reference.</td><td>D1 + R2</td></tr>
+        <tr><td><code>resume_feedback</code></td><td>Core</td><td>AI-generated resume assessment with review lifecycle.</td><td>D1</td></tr>
+        <tr><td><code>interview_questions</code></td><td>Core</td><td>Persisted structured interview preparation output.</td><td>D1</td></tr>
+        <tr><td><code>ai_usage</code></td><td>Core</td><td>Quota tracking, deduplication, and inference accountability.</td><td>D1</td></tr>
+        <tr><td><code>trade_grad_waitlist</code></td><td>Public</td><td>Trade graduate market-interest capture.</td><td>D1</td></tr>
+        <tr><td><code>employer_waitlist</code></td><td>Public</td><td>Employer market-interest capture.</td><td>D1</td></tr>
+        <tr><td><code>contact_submissions</code></td><td>Operations</td><td>Persisted contact form submissions with follow-up state.</td><td>D1</td></tr>
+        <tr><td><code>admin_audit_log</code></td><td>Operations</td><td>Review actions, edits, approvals, rejections, export events.</td><td>D1</td></tr>
+        <tr><td><code>email_events</code></td><td>Optional</td><td>Mirrored record of emails requested, delivered, failed, or retried.</td><td>D1 + Resend webhook sync</td></tr>
+        <tr><td><code>workflow_runs</code></td><td>Optional</td><td>Human-readable record of Workflow execution state beyond provider logs.</td><td>D1</td></tr>
+    </table>
+
+    <div class="box amber">
+        <p><strong>Recommended addition.</strong> The current proposal text strongly implies contact submissions and admin review traceability, but the launch schema in the proposal can be improved by adding <code>contact_submissions</code> and <code>admin_audit_log</code>. These two tables close an operational gap: without them, contact messages are only transient emails and review edits are not durably auditable.</p>
+    </div>
+
+    <h2>4. Entity Specifications</h2>
+
+    <h3>4.1 users</h3>
+    <p>The <code>users</code> table is not the primary identity provider. Clerk remains the authoritative identity system. This table exists because application queries should not depend on live calls back to Clerk for every join, dashboard load, or admin listing.</p>
+    <table>
+        <tr><th>Column</th><th>Type</th><th>Constraint</th><th>Purpose</th></tr>
+        <tr><td><code>id</code></td><td>TEXT</td><td>Primary key</td><td>Clerk user ID, reused everywhere as foreign key.</td></tr>
+        <tr><td><code>email</code></td><td>TEXT</td><td>Unique, not null</td><td>Operationally queryable email address.</td></tr>
+        <tr><td><code>full_name</code></td><td>TEXT</td><td>Nullable</td><td>Human-readable display identity.</td></tr>
+        <tr><td><code>primary_trade</code></td><td>TEXT</td><td>Nullable</td><td>Optional default trade context for future personalisation.</td></tr>
+        <tr><td><code>clerk_created_at</code></td><td>DATETIME</td><td>Nullable</td><td>Mirrored timestamp from Clerk for audit parity.</td></tr>
+        <tr><td><code>created_at</code></td><td>DATETIME</td><td>Not null</td><td>Local record creation timestamp.</td></tr>
+        <tr><td><code>updated_at</code></td><td>DATETIME</td><td>Not null</td><td>Last sync/update timestamp.</td></tr>
+    </table>
+
+    <h3>4.2 user_roles</h3>
+    <p>This table decouples application authorisation from identity authentication. A valid Clerk user is authenticated; a valid <code>user_roles</code> record with <code>role = 'admin'</code> is authorised for administrative workflows.</p>
+    <table>
+        <tr><th>Column</th><th>Type</th><th>Constraint</th><th>Purpose</th></tr>
+        <tr><td><code>id</code></td><td>TEXT</td><td>Primary key</td><td>Record identifier.</td></tr>
+        <tr><td><code>user_id</code></td><td>TEXT</td><td>Foreign key → users.id</td><td>Role owner.</td></tr>
+        <tr><td><code>role</code></td><td>TEXT</td><td>Check in ('admin','user')</td><td>Application role.</td></tr>
+        <tr><td><code>granted_at</code></td><td>DATETIME</td><td>Not null</td><td>When access was granted.</td></tr>
+        <tr><td><code>granted_by</code></td><td>TEXT</td><td>Nullable</td><td>Admin actor or system webhook that granted the role.</td></tr>
+    </table>
+
+    <h3>4.3 resumes</h3>
+    <p>This table stores metadata only. The PDF file itself lives in R2. That separation matters because relational databases should not store large binary objects when object storage is already part of the platform architecture.</p>
+    <table>
+        <tr><th>Column</th><th>Type</th><th>Constraint</th><th>Purpose</th></tr>
+        <tr><td><code>id</code></td><td>TEXT</td><td>Primary key</td><td>Resume identifier.</td></tr>
+        <tr><td><code>user_id</code></td><td>TEXT</td><td>Foreign key → users.id, not null</td><td>Resume owner.</td></tr>
+        <tr><td><code>file_name</code></td><td>TEXT</td><td>Not null</td><td>Original uploaded file name.</td></tr>
+        <tr><td><code>file_path</code></td><td>TEXT</td><td>Unique, not null</td><td>R2 object key.</td></tr>
+        <tr><td><code>file_size</code></td><td>INTEGER</td><td>Not null</td><td>Upload validation and storage metrics.</td></tr>
+        <tr><td><code>file_hash</code></td><td>TEXT</td><td>Indexed, not null</td><td>SHA-256 deduplication identity for AI usage and replacement detection.</td></tr>
+        <tr><td><code>trade_program</code></td><td>TEXT</td><td>Nullable</td><td>Trade-specific enrichment context.</td></tr>
+        <tr><td><code>is_active</code></td><td>INTEGER</td><td>Default 1</td><td>Supports one-active-resume logic without destructive hard delete.</td></tr>
+        <tr><td><code>created_at</code></td><td>DATETIME</td><td>Not null</td><td>Upload timestamp.</td></tr>
+        <tr><td><code>updated_at</code></td><td>DATETIME</td><td>Not null</td><td>Replacement/update timestamp.</td></tr>
+    </table>
+
+    <h3>4.4 resume_feedback</h3>
+    <p>This is the most governance-sensitive entity in the platform. It represents machine-generated output that directly affects user confidence. For that reason, the table must support the full admin review lifecycle rather than just storing score output.</p>
+    <table>
+        <tr><th>Column</th><th>Type</th><th>Constraint</th><th>Purpose</th></tr>
+        <tr><td><code>id</code></td><td>TEXT</td><td>Primary key</td><td>Feedback record ID.</td></tr>
+        <tr><td><code>user_id</code></td><td>TEXT</td><td>Foreign key → users.id</td><td>User who requested feedback.</td></tr>
+        <tr><td><code>resume_id</code></td><td>TEXT</td><td>Foreign key → resumes.id</td><td>Resume under assessment.</td></tr>
+        <tr><td><code>resume_hash</code></td><td>TEXT</td><td>Indexed</td><td>Snapshot of evaluated resume content identity.</td></tr>
+        <tr><td><code>status</code></td><td>TEXT</td><td>Check in ('pending_review','approved','rejected')</td><td>Review lifecycle state.</td></tr>
+        <tr><td><code>overall_score</code></td><td>INTEGER</td><td>Check between 1 and 10</td><td>Normalised CV score.</td></tr>
+        <tr><td><code>strengths</code></td><td>TEXT</td><td>JSON array</td><td>Positive findings.</td></tr>
+        <tr><td><code>improvements</code></td><td>TEXT</td><td>JSON array</td><td>Weaknesses or gaps.</td></tr>
+        <tr><td><code>suggestions</code></td><td>TEXT</td><td>JSON array</td><td>General improvement suggestions.</td></tr>
+        <tr><td><code>trade_suggestions</code></td><td>TEXT</td><td>JSON array</td><td>Trade-specific recommendations.</td></tr>
+        <tr><td><code>actionable_steps</code></td><td>TEXT</td><td>JSON array</td><td>Immediate next steps.</td></tr>
+        <tr><td><code>model_name</code></td><td>TEXT</td><td>Nullable</td><td>Which OpenRouter-routed model produced the original output.</td></tr>
+        <tr><td><code>workflow_id</code></td><td>TEXT</td><td>Nullable</td><td>Cloudflare Workflow execution identity.</td></tr>
+        <tr><td><code>reviewed_by</code></td><td>TEXT</td><td>Nullable</td><td>Admin user ID.</td></tr>
+        <tr><td><code>reviewed_at</code></td><td>DATETIME</td><td>Nullable</td><td>Review completion time.</td></tr>
+        <tr><td><code>rejection_reason</code></td><td>TEXT</td><td>Nullable</td><td>Why a feedback item was rejected, if applicable.</td></tr>
+        <tr><td><code>created_at</code></td><td>DATETIME</td><td>Not null</td><td>Original generation time.</td></tr>
+    </table>
+
+    <h3>4.5 interview_questions</h3>
+    <p>This entity stores immediately consumable AI output. Unlike resume feedback, it bypasses the admin gate because its risk profile is lower and its value is time-sensitive.</p>
+    <table>
+        <tr><th>Column</th><th>Type</th><th>Constraint</th><th>Purpose</th></tr>
+        <tr><td><code>id</code></td><td>TEXT</td><td>Primary key</td><td>Question set ID.</td></tr>
+        <tr><td><code>user_id</code></td><td>TEXT</td><td>Foreign key → users.id</td><td>Requesting user.</td></tr>
+        <tr><td><code>resume_id</code></td><td>TEXT</td><td>Nullable foreign key → resumes.id</td><td>Optional resume context link.</td></tr>
+        <tr><td><code>job_description</code></td><td>TEXT</td><td>Not null</td><td>User input, truncated by the Worker.</td></tr>
+        <tr><td><code>technical</code></td><td>TEXT</td><td>JSON array</td><td>Technical questions.</td></tr>
+        <tr><td><code>behavioral</code></td><td>TEXT</td><td>JSON array</td><td>Behavioural questions.</td></tr>
+        <tr><td><code>situational</code></td><td>TEXT</td><td>JSON array</td><td>Situational questions.</td></tr>
+        <tr><td><code>model_name</code></td><td>TEXT</td><td>Nullable</td><td>OpenRouter-routed model used for the result.</td></tr>
+        <tr><td><code>workflow_id</code></td><td>TEXT</td><td>Nullable</td><td>Workflow execution identity.</td></tr>
+        <tr><td><code>created_at</code></td><td>DATETIME</td><td>Not null</td><td>Generation time.</td></tr>
+    </table>
+
+    <h3>4.6 ai_usage</h3>
+    <p>This table is the control plane for AI cost and abuse protection. Without it, quota enforcement, deduplication, and operational visibility are all impossible.</p>
+    <table>
+        <tr><th>Column</th><th>Type</th><th>Constraint</th><th>Purpose</th></tr>
+        <tr><td><code>id</code></td><td>TEXT</td><td>Primary key</td><td>Usage record ID.</td></tr>
+        <tr><td><code>user_id</code></td><td>TEXT</td><td>Foreign key → users.id</td><td>User consuming AI actions.</td></tr>
+        <tr><td><code>action_type</code></td><td>TEXT</td><td>Check in ('resume_feedback','interview_questions')</td><td>Which AI workflow was used.</td></tr>
+        <tr><td><code>input_hash</code></td><td>TEXT</td><td>Indexed, not null</td><td>SHA-256 content hash for deduplication.</td></tr>
+        <tr><td><code>workflow_id</code></td><td>TEXT</td><td>Nullable</td><td>Links usage back to Workflow execution.</td></tr>
+        <tr><td><code>model_name</code></td><td>TEXT</td><td>Nullable</td><td>Observed model used for cost analysis.</td></tr>
+        <tr><td><code>created_at</code></td><td>DATETIME</td><td>Not null</td><td>Usage timestamp.</td></tr>
+    </table>
+
+    <h3>4.7 trade_grad_waitlist</h3>
+    <p>This table is intentionally not linked to <code>users</code>. It captures pre-authentication demand. A waitlist submission may later convert into a real account, but that linkage should be made explicitly by a later onboarding process rather than assumed.</p>
+    <table>
+        <tr><th>Column</th><th>Type</th><th>Constraint</th><th>Purpose</th></tr>
+        <tr><td><code>id</code></td><td>TEXT</td><td>Primary key</td><td>Submission ID.</td></tr>
+        <tr><td><code>full_name</code></td><td>TEXT</td><td>Not null</td><td>Lead name.</td></tr>
+        <tr><td><code>email</code></td><td>TEXT</td><td>Indexed, not null</td><td>Contact route and dedupe candidate.</td></tr>
+        <tr><td><code>trade_program</code></td><td>TEXT</td><td>Not null</td><td>Trade vertical.</td></tr>
+        <tr><td><code>state</code></td><td>TEXT</td><td>Nullable</td><td>Region data.</td></tr>
+        <tr><td><code>city</code></td><td>TEXT</td><td>Nullable</td><td>Location detail.</td></tr>
+        <tr><td><code>consent</code></td><td>INTEGER</td><td>Not null</td><td>Consent flag for outreach.</td></tr>
+        <tr><td><code>created_at</code></td><td>DATETIME</td><td>Not null</td><td>Submission time.</td></tr>
+    </table>
+
+    <h3>4.8 employer_waitlist</h3>
+    <table>
+        <tr><th>Column</th><th>Type</th><th>Constraint</th><th>Purpose</th></tr>
+        <tr><td><code>id</code></td><td>TEXT</td><td>Primary key</td><td>Submission ID.</td></tr>
+        <tr><td><code>full_name</code></td><td>TEXT</td><td>Not null</td><td>Lead contact name.</td></tr>
+        <tr><td><code>job_title</code></td><td>TEXT</td><td>Nullable</td><td>Role of submitting employer contact.</td></tr>
+        <tr><td><code>company_email</code></td><td>TEXT</td><td>Indexed, not null</td><td>Primary outreach route.</td></tr>
+        <tr><td><code>trades_hiring_for</code></td><td>TEXT</td><td>Not null</td><td>Demand category.</td></tr>
+        <tr><td><code>hiring_volume</code></td><td>TEXT</td><td>Nullable</td><td>Commercial demand indicator.</td></tr>
+        <tr><td><code>state</code></td><td>TEXT</td><td>Nullable</td><td>Region data.</td></tr>
+        <tr><td><code>city</code></td><td>TEXT</td><td>Nullable</td><td>Location detail.</td></tr>
+        <tr><td><code>consent</code></td><td>INTEGER</td><td>Not null</td><td>Consent flag.</td></tr>
+        <tr><td><code>created_at</code></td><td>DATETIME</td><td>Not null</td><td>Submission time.</td></tr>
+    </table>
+
+    <h3>4.9 contact_submissions</h3>
+    <p>This table is recommended because otherwise the contact workflow is operationally weak: a submitted message becomes only an email event, which means there is no durable inbox, no searchable record, and no follow-up state.</p>
+    <table>
+        <tr><th>Column</th><th>Type</th><th>Constraint</th><th>Purpose</th></tr>
+        <tr><td><code>id</code></td><td>TEXT</td><td>Primary key</td><td>Submission ID.</td></tr>
+        <tr><td><code>full_name</code></td><td>TEXT</td><td>Not null</td><td>Contact identity.</td></tr>
+        <tr><td><code>email</code></td><td>TEXT</td><td>Indexed, not null</td><td>Return contact route.</td></tr>
+        <tr><td><code>subject</code></td><td>TEXT</td><td>Nullable</td><td>Message categorisation.</td></tr>
+        <tr><td><code>message</code></td><td>TEXT</td><td>Not null</td><td>Submitted inquiry body.</td></tr>
+        <tr><td><code>status</code></td><td>TEXT</td><td>Check in ('new','reviewed','closed')</td><td>Operational follow-up state.</td></tr>
+        <tr><td><code>created_at</code></td><td>DATETIME</td><td>Not null</td><td>Submission timestamp.</td></tr>
+    </table>
+
+    <h3>4.10 admin_audit_log</h3>
+    <p>The moment an admin can approve, reject, edit, or export records, the system benefits from an audit trail. This table is the governance layer that explains who did what and when.</p>
+    <table>
+        <tr><th>Column</th><th>Type</th><th>Constraint</th><th>Purpose</th></tr>
+        <tr><td><code>id</code></td><td>TEXT</td><td>Primary key</td><td>Audit event ID.</td></tr>
+        <tr><td><code>actor_user_id</code></td><td>TEXT</td><td>Foreign key → users.id</td><td>Admin actor.</td></tr>
+        <tr><td><code>entity_type</code></td><td>TEXT</td><td>Not null</td><td>Target table type, for example <code>resume_feedback</code>.</td></tr>
+        <tr><td><code>entity_id</code></td><td>TEXT</td><td>Not null</td><td>Target record ID.</td></tr>
+        <tr><td><code>action</code></td><td>TEXT</td><td>Not null</td><td>approve, reject, edit, export_csv, grant_role, etc.</td></tr>
+        <tr><td><code>before_json</code></td><td>TEXT</td><td>Nullable</td><td>Optional snapshot before change.</td></tr>
+        <tr><td><code>after_json</code></td><td>TEXT</td><td>Nullable</td><td>Optional snapshot after change.</td></tr>
+        <tr><td><code>created_at</code></td><td>DATETIME</td><td>Not null</td><td>Audit time.</td></tr>
+    </table>
+
+    <h2>5. Relationship Model</h2>
+    <p>The data model is intentionally simple. Most business-critical records hang off <code>users</code> as the root aggregate. Public marketing records remain separate because they are pre-account leads, not authenticated actors.</p>
+
+    <table>
+        <tr>
+            <th>Parent</th>
+            <th>Child</th>
+            <th>Cardinality</th>
+            <th>Meaning</th>
+        </tr>
+        <tr><td><code>users</code></td><td><code>user_roles</code></td><td>1 → many</td><td>A user may accumulate roles over time, though launch behaviour likely uses a single active role.</td></tr>
+        <tr><td><code>users</code></td><td><code>resumes</code></td><td>1 → many</td><td>A user may upload multiple resumes historically, with one active at a time.</td></tr>
+        <tr><td><code>users</code></td><td><code>resume_feedback</code></td><td>1 → many</td><td>A user may request multiple feedback runs across revisions.</td></tr>
+        <tr><td><code>resumes</code></td><td><code>resume_feedback</code></td><td>1 → many</td><td>Each resume version can have multiple feedback runs if policy changes permit it.</td></tr>
+        <tr><td><code>users</code></td><td><code>interview_questions</code></td><td>1 → many</td><td>A user can generate many question sets for different job descriptions.</td></tr>
+        <tr><td><code>resumes</code></td><td><code>interview_questions</code></td><td>1 → many optional</td><td>Question sets may optionally be contextualised against a particular resume.</td></tr>
+        <tr><td><code>users</code></td><td><code>ai_usage</code></td><td>1 → many</td><td>Every AI action produces one durable usage record.</td></tr>
+        <tr><td><code>users</code></td><td><code>admin_audit_log</code></td><td>1 → many</td><td>Admin actions are attributable to individual actors.</td></tr>
+        <tr><td><code>trade_grad_waitlist</code></td><td>None</td><td>Standalone</td><td>Public lead capture prior to authentication.</td></tr>
+        <tr><td><code>employer_waitlist</code></td><td>None</td><td>Standalone</td><td>Public employer lead capture prior to any employer workspace.</td></tr>
+        <tr><td><code>contact_submissions</code></td><td>None</td><td>Standalone</td><td>Operational inbox stream, not an authenticated account object.</td></tr>
+    </table>
+
+    <h2>6. Referential and Lifecycle Rules</h2>
+    <p>The most important part of an ERD is not the foreign keys alone. It is the lifecycle policy behind them: what gets deleted, what gets preserved, and what should be immutable after creation.</p>
+
+    <table>
+        <tr>
+            <th>Entity</th>
+            <th>Delete Policy</th>
+            <th>Update Policy</th>
+            <th>Reasoning</th>
+        </tr>
+        <tr><td><code>users</code></td><td>Soft delete recommended</td><td>Sync from Clerk webhook</td><td>User-linked records should not become orphaned or vanish from audit history.</td></tr>
+        <tr><td><code>resumes</code></td><td>Prefer deactivate over hard delete</td><td>Metadata mutable, hash immutable per version</td><td>Feedback and questions may reference historical resume versions.</td></tr>
+        <tr><td><code>resume_feedback</code></td><td>Do not hard delete except administrative purge</td><td>Editable only by admin review flow</td><td>It is part of the trust and audit model.</td></tr>
+        <tr><td><code>interview_questions</code></td><td>Retain unless retention policy says otherwise</td><td>Immutable after generation</td><td>Acts as historical prep record and reuseable user history.</td></tr>
+        <tr><td><code>ai_usage</code></td><td>Retain</td><td>Immutable</td><td>Needed for cost tracking, abuse detection, and dispute resolution.</td></tr>
+        <tr><td><code>user_roles</code></td><td>Retain historical rows or deactivate</td><td>Role changes append-preferred</td><td>Role history can matter in governance investigations.</td></tr>
+        <tr><td><code>waitlist tables</code></td><td>Retain until consent or data retention policy requires purge</td><td>Rarely updated</td><td>These are marketing and go-to-market records.</td></tr>
+        <tr><td><code>admin_audit_log</code></td><td>Never delete under normal operation</td><td>Immutable</td><td>Audit history loses meaning if it can be edited.</td></tr>
+    </table>
+
+    <div class="box red">
+        <p><strong>Critical governance point.</strong> Resume feedback should never be overwritten in place without preserving review history. If an admin materially edits a machine-generated record, the system should either record a delta in <code>admin_audit_log</code> or store an edited revision snapshot. Otherwise the platform cannot later explain what the AI originally produced versus what the human reviewer changed.</p>
+    </div>
+
+    <h2>7. Interaction Model by Capability</h2>
+
+    <h3>7.1 Authentication and User Sync</h3>
+    <ol>
+        <li>Clerk creates or updates the user.</li>
+        <li>A Clerk webhook hits a Cloudflare Worker.</li>
+        <li>The Worker upserts the <code>users</code> table in D1.</li>
+        <li>If role mapping exists, the Worker also upserts <code>user_roles</code>.</li>
+        <li>Frontend requests use Clerk JWTs, but Workers query D1 for authorisation and user-linked data.</li>
+    </ol>
+
+    <h3>7.2 Resume Upload</h3>
+    <ol>
+        <li>User uploads a PDF.</li>
+        <li>Worker validates file type and size, then writes the object to R2.</li>
+        <li>Worker computes the file hash and writes metadata into <code>resumes</code>.</li>
+        <li>Any previous active resume for the same user is deactivated or superseded.</li>
+        <li>The frontend now references the D1 metadata record, not the raw storage object.</li>
+    </ol>
+
+    <h3>7.3 Resume Feedback Generation</h3>
+    <ol>
+        <li>The user triggers the feedback flow.</li>
+        <li>Worker or Workflow validates the user, resume ownership, quota, and deduplication using <code>users</code>, <code>resumes</code>, and <code>ai_usage</code>.</li>
+        <li>The Workflow optionally reads the PDF from R2 for text extraction.</li>
+        <li>OpenRouter is called with the structured prompt and model selection.</li>
+        <li>The output is normalised and persisted into <code>resume_feedback</code> with <code>status = 'pending_review'</code>.</li>
+        <li>A paired record is written into <code>ai_usage</code>.</li>
+        <li>Resend sends an admin notification.</li>
+        <li>Admin review later updates the status to approved or rejected.</li>
+    </ol>
+
+    <h3>7.4 Interview Question Generation</h3>
+    <ol>
+        <li>The user submits a job description.</li>
+        <li>Worker validates quota and input uniqueness through <code>ai_usage</code>.</li>
+        <li>Optional resume context is loaded from <code>resumes</code>.</li>
+        <li>OpenRouter returns structured question arrays.</li>
+        <li>The result is written to <code>interview_questions</code>.</li>
+        <li>The usage event is written to <code>ai_usage</code>.</li>
+        <li>The user sees the result immediately.</li>
+    </ol>
+
+    <h3>7.5 Admin Review and Operations</h3>
+    <ol>
+        <li>Admin opens the panel with a valid Clerk session.</li>
+        <li>Worker verifies the admin role using <code>user_roles</code>.</li>
+        <li>Admin queries feedback, waitlists, and optionally contact submissions from D1.</li>
+        <li>Approval, rejection, edit, and export actions write an <code>admin_audit_log</code> row.</li>
+        <li>Feedback review updates <code>resume_feedback.status</code> and review metadata.</li>
+    </ol>
+
+    <h3>7.6 Public Waitlist and Contact Capture</h3>
+    <ol>
+        <li>Unauthenticated visitor submits a trade graduate waitlist, employer waitlist, or contact form.</li>
+        <li>Worker validates the payload and writes the corresponding D1 row.</li>
+        <li>Resend optionally sends confirmation and internal notification emails.</li>
+        <li>Optional webhook events mirror delivery status into <code>email_events</code>.</li>
+    </ol>
+
+    <h2>8. External System Boundaries</h2>
+    <p>The ERD is not complete unless the off-database boundaries are explicit. Several critical data objects live outside D1 and must be treated as first-class dependencies.</p>
+
+    <table>
+        <tr>
+            <th>External System</th>
+            <th>Owns What</th>
+            <th>How D1 References It</th>
+            <th>Risk if Unsynchronised</th>
+        </tr>
+        <tr>
+            <td>Clerk</td>
+            <td>Identity, email verification state, active sessions</td>
+            <td><code>users.id</code> mirrors Clerk user ID</td>
+            <td>User exists in Clerk but not in D1, causing broken joins or missing dashboard state</td>
+        </tr>
+        <tr>
+            <td>Cloudflare R2</td>
+            <td>Resume PDF binaries</td>
+            <td><code>resumes.file_path</code></td>
+            <td>Metadata exists but file object is missing, breaking feedback generation</td>
+        </tr>
+        <tr>
+            <td>OpenRouter</td>
+            <td>Inference runtime and model routing</td>
+            <td><code>resume_feedback.model_name</code>, <code>interview_questions.model_name</code>, <code>ai_usage.model_name</code></td>
+            <td>Impossible to explain model provenance, debug quality issues, or analyse cost</td>
+        </tr>
+        <tr>
+            <td>Resend</td>
+            <td>Email delivery execution</td>
+            <td>Optional <code>email_events.external_message_id</code></td>
+            <td>No operational visibility into whether notifications actually delivered</td>
+        </tr>
+        <tr>
+            <td>Cloudflare Workflows</td>
+            <td>Durable multi-step execution state</td>
+            <td><code>workflow_id</code> columns across AI-linked tables</td>
+            <td>Harder debugging of retries, partial failures, or duplicate requests</td>
+        </tr>
+    </table>
+
+    <h2>9. Recommended Constraints and Indexes</h2>
+    <p>A data model without access patterns is incomplete. These indexes and constraints support the actual product workflows described in the proposal.</p>
+
+    <table>
+        <tr>
+            <th>Entity</th>
+            <th>Index / Constraint</th>
+            <th>Why It Matters</th>
+        </tr>
+        <tr><td><code>users</code></td><td>Unique index on <code>email</code></td><td>Prevents duplicate mirrored identity rows.</td></tr>
+        <tr><td><code>user_roles</code></td><td>Index on <code>user_id</code>, composite unique on <code>user_id + role</code></td><td>Fast auth checks and no duplicate role grants.</td></tr>
+        <tr><td><code>resumes</code></td><td>Index on <code>user_id</code>, unique index on <code>file_path</code>, index on <code>file_hash</code></td><td>Fast dashboard lookup and dedupe.</td></tr>
+        <tr><td><code>resume_feedback</code></td><td>Composite index on <code>user_id + created_at DESC</code>, index on <code>status</code>, index on <code>resume_id</code></td><td>User history views and admin pending-review queue.</td></tr>
+        <tr><td><code>interview_questions</code></td><td>Composite index on <code>user_id + created_at DESC</code></td><td>Latest history lookup from dashboard and interview page.</td></tr>
+        <tr><td><code>ai_usage</code></td><td>Index on <code>user_id</code>, unique or constrained lookup on <code>action_type + input_hash</code> per user</td><td>Quota checks and deduplication performance.</td></tr>
+        <tr><td><code>trade_grad_waitlist</code></td><td>Index on <code>email</code>, index on <code>trade_program</code>, index on <code>created_at</code></td><td>Lead review, dedupe, and segmentation.</td></tr>
+        <tr><td><code>employer_waitlist</code></td><td>Index on <code>company_email</code>, index on <code>created_at</code></td><td>Lead review and commercial prioritisation.</td></tr>
+        <tr><td><code>contact_submissions</code></td><td>Index on <code>status + created_at</code></td><td>Inbox-style follow-up workflow.</td></tr>
+        <tr><td><code>admin_audit_log</code></td><td>Index on <code>entity_type + entity_id</code>, index on <code>actor_user_id</code></td><td>Incident investigation and traceability.</td></tr>
+    </table>
+
+    <h2>10. Final ERD Position</h2>
+    <p>The proposed ERD is intentionally conservative. It does not over-engineer the system with marketplace entities, employer workspaces, applicant pipelines, or billing objects that do not yet exist in the product. Instead it supports exactly what the product is trying to do now:</p>
+    <ul>
+        <li>Authenticate and recognise users cleanly through Clerk.</li>
+        <li>Store resume metadata in D1 and resume files in R2.</li>
+        <li>Run AI workflows durably through Cloudflare Workers and Workflows.</li>
+        <li>Persist AI outputs with governance-aware lifecycle controls.</li>
+        <li>Track quota, dedupe, and operational accountability.</li>
+        <li>Capture public demand from candidates and employers.</li>
+        <li>Add enough operational tables to avoid blind spots in contact handling, review auditing, and email visibility.</li>
+    </ul>
+
+    <div class="box teal">
+        <p><strong>Recommendation.</strong> Treat this document as the canonical schema design reference for the migration from Supabase to Clerk + Cloudflare. If the backend scope expands later into employer workspaces, candidate profiles, career fair event execution, or analytics, those should be added as a second-phase ERD extension rather than mixed into the launch schema.</p>
+    </div>
+</div>
+</body>
+</html>
