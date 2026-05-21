@@ -14,6 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 import { Shield, Download, Search, FileText, Eye, Pencil, ClipboardList, Mail, Trash2, RefreshCw, Users, ChevronDown, ChevronRight, ShieldCheck, ShieldOff, Plus, Minus, Save, Bell } from 'lucide-react';
 import { toast } from 'sonner';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -279,6 +280,8 @@ function EmployerAccessRequestsTab() {
 function CareerFairCompaniesTab() {
   const [companies, setCompanies] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [notesDialog, setNotesDialog] = useState<{ id: string; name: string; status: string } | null>(null);
+  const [notesText, setNotesText] = useState('');
 
   useEffect(() => {
     adminApi.getCompanies().then((d: any) => setCompanies(d.companies ?? d ?? [])).catch(() => {}).finally(() => setLoading(false));
@@ -300,10 +303,27 @@ function CareerFairCompaniesTab() {
     } catch { toast.error('Failed'); }
   };
 
-  const handleStatus = async (id: string, status: string) => {
+  const openNotesDialog = (c: any) => {
+    setNotesDialog({ id: c.id, name: c.company_name, status: c.status });
+    setNotesText('');
+  };
+
+  const handleStatusWithNotes = async () => {
+    if (!notesDialog) return;
     try {
-      await adminApi.updateCompanyStatus(id, status);
-      setCompanies(prev => prev.map(c => c.id === id ? { ...c, status } : c));
+      await adminApi.updateCompanyStatus(notesDialog.id, notesDialog.status, notesText.trim() || undefined);
+      setCompanies(prev => prev.map(c => c.id === notesDialog.id ? { ...c, status: notesDialog.status } : c));
+      toast.success('Status updated');
+      setNotesDialog(null);
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to update status');
+    }
+  };
+
+  const handleStatusQuick = async (id: string, newStatus: string) => {
+    try {
+      await adminApi.updateCompanyStatus(id, newStatus);
+      setCompanies(prev => prev.map(c => c.id === id ? { ...c, status: newStatus } : c));
       toast.success('Status updated');
     } catch { toast.error('Failed'); }
   };
@@ -359,7 +379,10 @@ function CareerFairCompaniesTab() {
                       </Button>
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="sm" className="text-xs" onClick={() => handleStatus(c.id, c.status === 'active' ? 'suspended' : 'active')}>
+                      <Button variant="ghost" size="sm" className="text-xs" onClick={() => openNotesDialog(c)} title="Update status with notes">
+                        Notes
+                      </Button>
+                      <Button variant="ghost" size="sm" className="text-xs" onClick={() => handleStatusQuick(c.id, c.status === 'active' ? 'suspended' : 'active')}>
                         {c.status === 'active' ? 'Suspend' : 'Activate'}
                       </Button>
                     </TableCell>
@@ -370,6 +393,42 @@ function CareerFairCompaniesTab() {
           </div>
         )}
       </CardContent>
+
+      {/* Status + Notes Dialog */}
+      <Dialog open={!!notesDialog} onOpenChange={() => setNotesDialog(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Update Status — {notesDialog?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-1.5">
+              <Label>Status</Label>
+              <Select value={notesDialog?.status || 'active'} onValueChange={v => setNotesDialog(prev => prev ? { ...prev, status: v } : null)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pending_review">Pending Review</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="suspended">Suspended</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Internal Notes (optional)</Label>
+              <Textarea
+                value={notesText}
+                onChange={e => setNotesText(e.target.value)}
+                placeholder="Add notes about this company status change..."
+                rows={3}
+              />
+              <p className="text-xs text-muted-foreground">Notes are saved with the status update but not visible to the employer.</p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setNotesDialog(null)}>Cancel</Button>
+            <Button onClick={handleStatusWithNotes}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
@@ -377,10 +436,27 @@ function CareerFairCompaniesTab() {
 // --- Career Fair Admin: Jobs Tab ---
 function CareerFairJobsTab() {
   const [jobs, setJobs] = useState<any[]>([]);
+  const [companies, setCompanies] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showCreate, setShowCreate] = useState(false);
+  const [createLoading, setCreateLoading] = useState(false);
+  const [createForm, setCreateForm] = useState({
+    company_id: '', title: '', description: '', trade_category: 'general',
+    employment_type: 'full_time', city: '', state: '', is_remote: false, status: 'active',
+    internal_notes: '',
+  });
+  const [unscrapedMode, setUnscrapedMode] = useState(false);
+  const [unscrapedCompany, setUnscrapedCompany] = useState({ name: '', city: '', state: '' });
+  const [newReq, setNewReq] = useState('');
+  const [newBen, setNewBen] = useState('');
+  const [requirements, setRequirements] = useState<string[]>([]);
+  const [benefits, setBenefits] = useState<string[]>([]);
 
   useEffect(() => {
-    adminApi.getAllJobs().then((d: any) => setJobs(d.jobs ?? d ?? [])).catch(() => {}).finally(() => setLoading(false));
+    Promise.all([
+      adminApi.getAllJobs().then((d: any) => setJobs(d.jobs ?? d ?? [])),
+      adminApi.getCompanies().then((d: any) => setCompanies(d.companies ?? d ?? [])),
+    ]).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
   const handleModerate = async (id: string, status: string) => {
@@ -399,65 +475,273 @@ function CareerFairJobsTab() {
     } catch { toast.error('Failed'); }
   };
 
+  const handleCreate = async () => {
+    if (unscrapedMode) {
+      if (!unscrapedCompany.name || !unscrapedCompany.city || !unscrapedCompany.state || !createForm.title || !createForm.description) {
+        toast.error('Please fill in company name, city, state, title, and description');
+        return;
+      }
+    } else {
+      if (!createForm.company_id || !createForm.title || !createForm.description || !createForm.city || !createForm.state) {
+        toast.error('Please fill in company, title, description, city, and state');
+        return;
+      }
+    }
+    setCreateLoading(true);
+    try {
+      const payload: any = {
+        ...createForm,
+        requirements,
+        benefits,
+        unscraped_mode: unscrapedMode,
+        unscraped_company_name: unscrapedMode ? unscrapedCompany.name : undefined,
+        unscraped_company_city: unscrapedMode ? unscrapedCompany.city : undefined,
+        unscraped_company_state: unscrapedMode ? unscrapedCompany.state : undefined,
+      };
+      const result = await adminApi.createJob(payload);
+      const newJob = (result as any).job;
+      setJobs(prev => [newJob, ...prev]);
+      setShowCreate(false);
+      setCreateForm({ company_id: '', title: '', description: '', trade_category: 'general', employment_type: 'full_time', city: '', state: '', is_remote: false, status: 'active', internal_notes: '' });
+      setRequirements([]);
+      setBenefits([]);
+      setUnscrapedMode(false);
+      setUnscrapedCompany({ name: '', city: '', state: '' });
+      toast.success('Job created');
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to create job');
+    }
+    setCreateLoading(false);
+  };
+
+  const addReq = () => { if (newReq.trim()) { setRequirements(prev => [...prev, newReq.trim()]); setNewReq(''); } };
+  const addBen = () => { if (newBen.trim()) { setBenefits(prev => [...prev, newBen.trim()]); setNewBen(''); } };
+
   if (loading) return <div className="py-8"><Skeleton className="h-48 w-full" /></div>;
 
   return (
-    <Card>
-      <CardHeader><CardTitle className="text-base">All Job Listings ({jobs.length})</CardTitle></CardHeader>
-      <CardContent>
-        {jobs.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-8">No job listings.</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Company</TableHead>
-                  <TableHead>Trade</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Featured</TableHead>
-                  <TableHead>Views</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {jobs.map(j => (
-                  <TableRow key={j.id}>
-                    <TableCell className="font-medium">{j.title}</TableCell>
-                    <TableCell className="text-sm">{j.company_name || '—'}</TableCell>
-                    <TableCell className="text-sm">{j.trade_category}</TableCell>
-                    <TableCell>
-                      <Select value={j.status} onValueChange={v => handleModerate(j.id, v)}>
-                        <SelectTrigger className="h-7 w-full sm:w-[110px] text-xs"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="draft">Draft</SelectItem>
-                          <SelectItem value="active">Active</SelectItem>
-                          <SelectItem value="paused">Paused</SelectItem>
-                          <SelectItem value="closed">Closed</SelectItem>
-                          <SelectItem value="expired">Expired</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </TableCell>
-                    <TableCell>
-                      <Button variant={j.is_featured ? 'secondary' : 'outline'} size="sm" className="text-xs h-7" onClick={() => handleFeature(j.id)}>
-                        {j.is_featured ? '★ Featured' : 'Feature'}
-                      </Button>
-                    </TableCell>
-                    <TableCell>{j.views_count ?? 0}</TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="sm" className="text-xs" onClick={() => handleModerate(j.id, j.status === 'active' ? 'closed' : 'active')}>
-                        {j.status === 'active' ? 'Close' : 'Activate'}
-                      </Button>
-                    </TableCell>
+    <>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0">
+          <CardTitle className="text-base">All Job Listings ({jobs.length})</CardTitle>
+          <Button size="sm" onClick={() => setShowCreate(true)}>
+            <Plus className="mr-1.5 h-3.5 w-3.5" /> Create Job
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {jobs.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-8">No job listings.</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Title</TableHead>
+                    <TableHead>Company</TableHead>
+                    <TableHead>Trade</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Featured</TableHead>
+                    <TableHead>Views</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {jobs.map(j => (
+                    <TableRow key={j.id}>
+                      <TableCell className="font-medium">{j.title}</TableCell>
+                      <TableCell className="text-sm">{j.company_name || '—'}</TableCell>
+                      <TableCell className="text-sm">{j.trade_category}</TableCell>
+                      <TableCell>
+                        <Select value={j.status} onValueChange={v => handleModerate(j.id, v)}>
+                          <SelectTrigger className="h-7 w-full sm:w-[110px] text-xs"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="draft">Draft</SelectItem>
+                            <SelectItem value="active">Active</SelectItem>
+                            <SelectItem value="paused">Paused</SelectItem>
+                            <SelectItem value="closed">Closed</SelectItem>
+                            <SelectItem value="expired">Expired</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </TableCell>
+                      <TableCell>
+                        <Button variant={j.is_featured ? 'secondary' : 'outline'} size="sm" className="text-xs h-7" onClick={() => handleFeature(j.id)}>
+                          {j.is_featured ? '★ Featured' : 'Feature'}
+                        </Button>
+                      </TableCell>
+                      <TableCell>{j.views_count ?? 0}</TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="ghost" size="sm" className="text-xs" onClick={() => handleModerate(j.id, j.status === 'active' ? 'closed' : 'active')}>
+                          {j.status === 'active' ? 'Close' : 'Activate'}
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Create Job Dialog */}
+      <Dialog open={showCreate} onOpenChange={setShowCreate}>
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="font-heading">Create Job Listing</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 p-3 rounded-lg border border-muted bg-muted/30">
+              <Checkbox
+                id="unscrapedMode"
+                checked={unscrapedMode}
+                onCheckedChange={v => { setUnscrapedMode(!!v); setCreateForm(f => ({ ...f, company_id: '' })); }}
+              />
+              <div className="flex-1">
+                <Label htmlFor="unscrapedMode" className="text-sm font-medium cursor-pointer">Post for unscraped company</Label>
+                <p className="text-xs text-muted-foreground">Create a job for a company not in the system (e.g. scraped listings)</p>
+              </div>
+            </div>
+
+            {unscrapedMode ? (
+              <div className="space-y-3 p-3 rounded-lg border border-dashed border-border">
+                <div className="space-y-1.5">
+                  <Label>Company Name *</Label>
+                  <Input
+                    value={unscrapedCompany.name}
+                    onChange={e => setUnscrapedCompany(c => ({ ...c, name: e.target.value }))}
+                    placeholder="e.g. ABC Electric LLC"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label>City *</Label>
+                    <Input
+                      value={unscrapedCompany.city}
+                      onChange={e => setUnscrapedCompany(c => ({ ...c, city: e.target.value }))}
+                      placeholder="Denver"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label>State *</Label>
+                    <Select value={unscrapedCompany.state} onValueChange={v => setUnscrapedCompany(c => ({ ...c, state: v }))}>
+                      <SelectTrigger><SelectValue placeholder="State" /></SelectTrigger>
+                      <SelectContent>
+                        {['AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD','MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY','DC','PR'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-1.5">
+                <Label>Company *</Label>
+                <Select value={createForm.company_id} onValueChange={v => setCreateForm(f => ({ ...f, company_id: v }))}>
+                  <SelectTrigger><SelectValue placeholder="Select company" /></SelectTrigger>
+                  <SelectContent>
+                    {companies.filter(c => c.status === 'active').map(c => <SelectItem key={c.id} value={c.id}>{c.company_name}</SelectItem>)}
+                    {companies.filter(c => c.status !== 'active').length > 0 && (
+                      <p className="px-2 py-1.5 text-xs text-muted-foreground">
+                        {companies.filter(c => c.status !== 'active').length} inactive company/companies not shown
+                      </p>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            <div className="space-y-1.5">
+              <Label>Job Title *</Label>
+              <Input value={createForm.title} onChange={e => setCreateForm(f => ({ ...f, title: e.target.value }))} placeholder="e.g. Senior Electrician" />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Description *</Label>
+              <Textarea value={createForm.description} onChange={e => setCreateForm(f => ({ ...f, description: e.target.value }))} placeholder="Describe the role..." rows={4} />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label>Trade *</Label>
+                <Select value={createForm.trade_category} onValueChange={v => setCreateForm(f => ({ ...f, trade_category: v }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {['electrician','hvac','welding','plumbing','carpentry','general'].map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Type *</Label>
+                <Select value={createForm.employment_type} onValueChange={v => setCreateForm(f => ({ ...f, employment_type: v }))}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {['full_time','part_time','contract','apprenticeship'].map(t => <SelectItem key={t} value={t}>{t.replace('_',' ')}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-1.5">
+                <Label>City *</Label>
+                <Input value={createForm.city} onChange={e => setCreateForm(f => ({ ...f, city: e.target.value }))} placeholder="Denver" />
+              </div>
+              <div className="space-y-1.5">
+                <Label>State *</Label>
+                <Select value={createForm.state} onValueChange={v => setCreateForm(f => ({ ...f, state: v }))}>
+                  <SelectTrigger><SelectValue placeholder="State" /></SelectTrigger>
+                  <SelectContent>
+                    {['AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD','MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY','DC','PR'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5 flex items-end">
+                <div className="flex items-center gap-2 h-10">
+                  <Checkbox id="remote" checked={createForm.is_remote} onCheckedChange={v => setCreateForm(f => ({ ...f, is_remote: !!v }))} />
+                  <Label htmlFor="remote">Remote</Label>
+                </div>
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label>Status</Label>
+              <Select value={createForm.status} onValueChange={v => setCreateForm(f => ({ ...f, status: v }))}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="active">Active (publish now)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Requirements (optional)</Label>
+              {requirements.map((r, i) => <div key={i} className="flex items-center gap-2 text-sm bg-muted px-3 py-1.5 rounded-md">{r}<button className="ml-auto text-muted-foreground hover:text-destructive" onClick={() => setRequirements(prev => prev.filter((_, idx) => idx !== i))}>×</button></div>)}
+              <div className="flex gap-2">
+                <Input value={newReq} onChange={e => setNewReq(e.target.value)} placeholder="Add requirement" onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addReq())} />
+                <Button type="button" variant="outline" size="sm" onClick={addReq}><Plus className="h-3.5 w-3.5" /></Button>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Internal Notes (admin only)</Label>
+              <Textarea
+                value={createForm.internal_notes}
+                onChange={e => setCreateForm(f => ({ ...f, internal_notes: e.target.value }))}
+                placeholder="Internal notes about this listing..."
+                rows={2}
+                className="text-xs"
+              />
+              <p className="text-xs text-muted-foreground">Not visible to job seekers</p>
+            </div>
+            <div className="space-y-2">
+              <Label>Benefits (optional)</Label>
+              {benefits.map((b, i) => <div key={i} className="flex items-center gap-2 text-sm bg-muted px-3 py-1.5 rounded-md">{b}<button className="ml-auto text-muted-foreground hover:text-destructive" onClick={() => setBenefits(prev => prev.filter((_, idx) => idx !== i))}>×</button></div>)}
+              <div className="flex gap-2">
+                <Input value={newBen} onChange={e => setNewBen(e.target.value)} placeholder="Add benefit" onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addBen())} />
+                <Button type="button" variant="outline" size="sm" onClick={addBen}><Plus className="h-3.5 w-3.5" /></Button>
+              </div>
+            </div>
           </div>
-        )}
-      </CardContent>
-    </Card>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCreate(false)}>Cancel</Button>
+            <Button onClick={handleCreate} disabled={createLoading}>{createLoading ? 'Creating...' : 'Create Job'}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
@@ -492,6 +776,7 @@ const AdminPanel = () => {
   const [editStrengths, setEditStrengths] = useState('');
   const [editImprovements, setEditImprovements] = useState('');
   const [editSuggestions, setEditSuggestions] = useState('');
+  const [editStatus, setEditStatus] = useState('');
   const [editScore, setEditScore] = useState('');
   const [editTradeSugg, setEditTradeSugg] = useState('');
   const [editSteps, setEditSteps] = useState('');
@@ -777,12 +1062,13 @@ const AdminPanel = () => {
     setEditScore(String(row.overall_score ?? ''));
     setEditTradeSugg(row.trade_suggestions.join('\n'));
     setEditSteps(row.actionable_steps.join('\n'));
+    setEditStatus(row.status || 'pending_review');
   };
 
   const handleSaveEdit = async () => {
     if (!editRow) return;
     setSaving(true);
-    const updatedFields = {
+    const updatedFields: Record<string, any> = {
       strengths: editStrengths.split('\n').filter(Boolean),
       improvements: editImprovements.split('\n').filter(Boolean),
       suggestions: editSuggestions.split('\n').filter(Boolean),
@@ -790,13 +1076,16 @@ const AdminPanel = () => {
       trade_suggestions: editTradeSugg.split('\n').filter(Boolean),
       actionable_steps: editSteps.split('\n').filter(Boolean),
     };
+    if (editStatus && editStatus !== editRow.status) {
+      updatedFields.status = editStatus;
+    }
     try {
       await adminApi.editFeedback(editRow.id, updatedFields);
-      toast.success('Feedback updated.');
+      toast.success(editStatus === 'approved' ? 'Feedback approved — user notified.' : editStatus === 'rejected' ? 'Feedback rejected.' : 'Feedback updated.');
       setEditRow(null);
       fetchFeedback();
-    } catch {
-      toast.error('Failed to save.');
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to save.');
     }
     setSaving(false);
   };
@@ -1014,7 +1303,6 @@ const AdminPanel = () => {
                           <TableHead>User</TableHead>
                           <TableHead>Resume</TableHead>
                           <TableHead>Score</TableHead>
-                          <TableHead>Status</TableHead>
                           <TableHead>Date</TableHead>
                           <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
@@ -1024,12 +1312,7 @@ const AdminPanel = () => {
                           <TableRow key={row.id}>
                             <TableCell className="font-mono text-xs">{row.user_email}</TableCell>
                             <TableCell className="text-sm max-w-[120px] truncate">{row.resume_file_name}</TableCell>
-                            <TableCell className="text-sm">{row.overall_score ?? '—'}</TableCell>
-                            <TableCell>
-                              <Badge variant={row.status === 'approved' ? 'default' : row.status === 'rejected' ? 'destructive' : 'secondary'}>
-                                {row.status === 'approved' ? 'Approved' : row.status === 'rejected' ? 'Rejected' : 'Pending'}
-                              </Badge>
-                            </TableCell>
+                            <TableCell className="text-sm">{row.overall_score != null ? `${row.overall_score}/10` : '—'}</TableCell>
                             <TableCell className="text-xs text-muted-foreground">
                               {new Date(row.created_at).toLocaleString()}
                             </TableCell>
@@ -1233,9 +1516,20 @@ const AdminPanel = () => {
                 <CardTitle className="text-base font-heading flex items-center gap-2">
                   <Users className="h-4 w-4" /> User Management
                 </CardTitle>
-                <Button variant="outline" size="sm" onClick={exportUsers}>
-                  <Download className="mr-1.5 h-3.5 w-3.5" /> Export CSV
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" onClick={async () => {
+                    try {
+                      const result = await adminApi.syncUsers();
+                      toast.success(`Synced ${(result as any).synced} new users from Clerk (${(result as any).total} total)`);
+                      fetchUsers();
+                    } catch { toast.error('Sync failed'); }
+                  }}>
+                    Sync from Clerk
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={exportUsers}>
+                    <Download className="mr-1.5 h-3.5 w-3.5" /> Export CSV
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="flex items-center gap-2 mb-4">
@@ -1641,6 +1935,17 @@ const AdminPanel = () => {
               <DialogTitle className="font-heading">Edit Feedback</DialogTitle>
             </DialogHeader>
             <div className="space-y-3">
+              <div>
+                <label className="text-sm font-medium">Status</label>
+                <Select value={editStatus} onValueChange={setEditStatus}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending_review">Pending Review</SelectItem>
+                    <SelectItem value="approved">Approved</SelectItem>
+                    <SelectItem value="rejected">Rejected</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <div>
                 <label className="text-sm font-medium">Overall Score (1-10)</label>
                 <Input type="number" min="1" max="10" value={editScore} onChange={e => setEditScore(e.target.value)} />

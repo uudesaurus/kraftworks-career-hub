@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import type { Env } from '../types';
 
-const dashboard = new Hono<{ Bindings: Env; Variables: { userId: string } }>();
+const dashboard = new Hono<{ Bindings: Env; Variables: { userId: string; email?: string } }>();
 
 // GET /api/user/dashboard - Batch summary for the dashboard
 dashboard.get('/dashboard', async (c) => {
@@ -63,6 +63,50 @@ dashboard.get('/profile', async (c) => {
     user,
     role: role?.role || 'user',
   });
+});
+
+// POST /api/user/profile-setup - Save/update profile completion (full_name, phone, trade_type, work_types, marketing_consent)
+dashboard.post('/profile-setup', async (c) => {
+  const userId = c.get('userId');
+  const body = await c.req.json();
+  const { full_name, phone, trade_type, work_types, marketing_consent } = body;
+
+  if (!full_name || typeof full_name !== 'string' || full_name.trim().length < 2) {
+    return c.json({ error: 'Full name is required (min 2 characters)' }, 400);
+  }
+  if (!phone || typeof phone !== 'string' || phone.trim().length < 7) {
+    return c.json({ error: 'Phone number is required (min 7 characters)' }, 400);
+  }
+  if (!trade_type || typeof trade_type !== 'string' || trade_type.trim().length === 0) {
+    return c.json({ error: 'Trade type is required' }, 400);
+  }
+  if (!Array.isArray(work_types) || work_types.length === 0) {
+    return c.json({ error: 'At least one work type is required' }, 400);
+  }
+  const validWorkTypes = ['full_time', 'part_time', 'contract', 'apprenticeship'];
+  const filteredWorkTypes = work_types.filter((wt: string) => validWorkTypes.includes(wt));
+  if (filteredWorkTypes.length === 0) {
+    return c.json({ error: 'At least one valid work type is required' }, 400);
+  }
+
+  // Ensure user row exists (Clerk webhook may be delayed)
+  const existingUser = await c.env.DB.prepare('SELECT id FROM users WHERE id = ?').bind(userId).first();
+  if (!existingUser) {
+    // Get email from Clerk JWT claims if available; fall back to placeholder
+    const clerkEmail = c.get('email') || `${userId}@placeholder.kraftworks.app`;
+    await c.env.DB.prepare(`
+      INSERT INTO users (id, email, full_name, phone, trade_type, work_types, marketing_consent)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).bind(userId, clerkEmail, full_name.trim(), phone.trim(), trade_type.trim(), JSON.stringify(filteredWorkTypes), marketing_consent ? 1 : 0).run();
+  } else {
+    await c.env.DB.prepare(`
+      UPDATE users
+      SET full_name = ?, phone = ?, trade_type = ?, work_types = ?, marketing_consent = ?, updated_at = datetime('now')
+      WHERE id = ?
+    `).bind(full_name.trim(), phone.trim(), trade_type.trim(), JSON.stringify(filteredWorkTypes), marketing_consent ? 1 : 0, userId).run();
+  }
+
+  return c.json({ success: true, profile_complete: true });
 });
 
 export default dashboard;

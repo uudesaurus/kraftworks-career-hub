@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 import type { Env, ResumeFeedbackRow, TradeGradWaitlistRow, EmployerWaitlistRow, ContactSubmissionRow, AuditLogRow, UserRow, NewsletterSubscriberRow, EmployerAccessRequestRow } from '../types';
-import { sendEmail, companyApprovedEmail, companySuspendedEmail, creditsUpdatedEmail, employerAccessApprovedEmail, employerAccessRejectedEmail } from '../lib/resend';
+import { sendEmail, companyApprovedEmail, companySuspendedEmail, creditsUpdatedEmail, employerAccessApprovedEmail, employerAccessRejectedEmail, feedbackApprovedEmail, feedbackRejectedEmail } from '../lib/resend';
 
 const admin = new Hono<{ Bindings: Env; Variables: { userId: string } }>();
 
@@ -28,7 +28,7 @@ admin.get('/feedback/queue', async (c) => {
   return c.json({ feedback: parsed });
 });
 
-// PATCH /api/admin/feedback/edit/:id - Edit feedback fields
+// PATCH /api/admin/feedback/edit/:id - Edit feedback fields + approve/reject
 admin.patch('/feedback/edit/:id', async (c) => {
   const feedbackId = c.req.param('id');
   const userId = c.get('userId');
@@ -39,6 +39,7 @@ admin.patch('/feedback/edit/:id', async (c) => {
     trade_suggestions?: string[];
     actionable_steps?: string[];
     overall_score?: number;
+    status?: string;
   }>();
 
   const existing = await c.env.DB.prepare(
@@ -56,6 +57,14 @@ admin.patch('/feedback/edit/:id', async (c) => {
   if (body.trade_suggestions) { updates.push('trade_suggestions = ?'); values.push(JSON.stringify(body.trade_suggestions)); }
   if (body.actionable_steps) { updates.push('actionable_steps = ?'); values.push(JSON.stringify(body.actionable_steps)); }
   if (body.overall_score !== undefined) { updates.push('overall_score = ?'); values.push(body.overall_score); }
+  if (body.status) {
+    const validStatuses = ['pending_review', 'approved', 'rejected'];
+    if (!validStatuses.includes(body.status)) {
+      return c.json({ error: `status must be one of: ${validStatuses.join(', ')}` }, 400);
+    }
+    updates.push('status = ?');
+    values.push(body.status);
+  }
 
   if (updates.length === 0) return c.json({ error: 'No fields to update' }, 400);
 
@@ -73,9 +82,30 @@ admin.patch('/feedback/edit/:id', async (c) => {
     crypto.randomUUID().replace(/-/g, ''),
     userId,
     feedbackId,
-    JSON.stringify({ overall_score: existing.overall_score }),
+    JSON.stringify({ overall_score: existing.overall_score, status: existing.status }),
     JSON.stringify(body),
   ).run();
+
+  // Send email notification when approved or rejected
+  if (body.status === 'approved' || body.status === 'rejected') {
+    try {
+      const user = await c.env.DB.prepare('SELECT * FROM users WHERE id = ?').bind(existing.user_id).first<UserRow>();
+      if (user?.email) {
+        if (body.status === 'approved') {
+          const tpl = feedbackApprovedEmail(user.full_name || 'there');
+          const result = await sendEmail(c.env.RESEND_API_KEY, { to: user.email, subject: tpl.subject, html: tpl.html }, c.env.SANDBOX_MODE === 'true');
+          if (!result) console.error(`[EMAIL FAILED] feedback approved to=${user.email}`);
+        } else {
+          const rejectionReason = (body as any).rejection_reason || 'Please contact support for more information.';
+          const tpl = feedbackRejectedEmail(user.full_name || 'there', rejectionReason);
+          const result = await sendEmail(c.env.RESEND_API_KEY, { to: user.email, subject: tpl.subject, html: tpl.html }, c.env.SANDBOX_MODE === 'true');
+          if (!result) console.error(`[EMAIL FAILED] feedback rejected to=${user.email}`);
+        }
+      }
+    } catch (err) {
+      console.error('[EMAIL FAILED] feedback status email error:', err);
+    }
+  }
 
   return c.json({ success: true });
 });
@@ -674,6 +704,8 @@ admin.post('/test-email', async (c) => {
   }
 });
 
+// POST /api/admin/test-all-emails
+
 // GET /api/admin/users/:userId - Single user full detail
 admin.get('/users/:userId', async (c) => {
   const targetUserId = c.req.param('userId');
@@ -819,11 +851,17 @@ admin.patch('/employer-requests/:id/approve', async (c) => {
   // Email: notify requester
   try {
     const user = await c.env.DB.prepare('SELECT * FROM users WHERE id = ?').bind(request.user_id).first<UserRow>();
-    if (user?.email) {
+    if (user?.email && !user.email.endsWith('@placeholder.kraftworks.app')) {
       const tpl = employerAccessApprovedEmail(user.full_name || 'there', request.company_name);
-      sendEmail(c.env.RESEND_API_KEY, { to: user.email, subject: tpl.subject, html: tpl.html }, c.env.SANDBOX_MODE === 'true').catch(() => {});
+      const result = await sendEmail(c.env.RESEND_API_KEY, { to: user.email, subject: tpl.subject, html: tpl.html }, c.env.SANDBOX_MODE === 'true');
+      if (!result) console.error(`[EMAIL FAILED] access-approved to=${user.email}`);
+      else console.log(`[EMAIL OK] access-approved id=${result.id} to=${user.email}`);
+    } else {
+      console.error(`[EMAIL SKIPPED] access-approved no valid email for user=${request.user_id}`);
     }
-  } catch { /* non-blocking */ }
+  } catch (err) {
+    console.error('[EMAIL ERROR] access-approved:', err);
+  }
 
   return c.json({ success: true });
 });
@@ -908,7 +946,7 @@ admin.patch('/companies/:id/status', async (c) => {
   const companyId = c.req.param('id');
   const userId = c.get('userId');
   const body = await c.req.json();
-  const { status } = body;
+  const { status, admin_notes } = body;
   if (!['pending_review', 'active', 'suspended'].includes(status)) {
     return c.json({ error: 'Invalid status' }, 400);
   }
@@ -916,14 +954,19 @@ admin.patch('/companies/:id/status', async (c) => {
   const company = await c.env.DB.prepare('SELECT * FROM companies WHERE id = ?').bind(companyId).first();
   if (!company) return c.json({ error: 'Company not found' }, 404);
 
-  await c.env.DB.prepare("UPDATE companies SET status = ?, updated_at = datetime('now') WHERE id = ?").bind(status, companyId).run();
+  const updates = ['status = ?', "updated_at = datetime('now')"];
+  const values: any[] = [status];
+  if (admin_notes !== undefined) { updates.push('admin_notes = ?'); values.push(admin_notes || null); }
+  values.push(companyId);
+
+  await c.env.DB.prepare(`UPDATE companies SET ${updates.join(', ')} WHERE id = ?`).bind(...values).run();
 
   await c.env.DB.prepare(`
     INSERT INTO admin_audit_log (id, actor_user_id, entity_type, entity_id, action, before_json, after_json)
     VALUES (?, ?, 'company', ?, 'update_status', ?, ?)
   `).bind(crypto.randomUUID().replace(/-/g, ''), userId, companyId,
     JSON.stringify({ status: (company as any).status }),
-    JSON.stringify({ status })
+    JSON.stringify({ status, admin_notes: admin_notes || null })
   ).run();
 
   // Email company owner about status change
@@ -1037,6 +1080,127 @@ admin.patch('/jobs/:id/feature', async (c) => {
   return c.json({ success: true, is_featured: newVal });
 });
 
+// POST /api/admin/jobs - Create a job listing (admin on behalf of a company)
+admin.post('/jobs', async (c) => {
+  const userId = c.get('userId');
+  const body = await c.req.json();
+  const { company_id, title, description, trade_category, employment_type,
+          experience_level, salary_min, salary_max, salary_period,
+          city: job_city, state: job_state, is_remote, requirements, benefits,
+          application_deadline, status, internal_notes,
+          unscraped_mode, unscraped_company_name, unscraped_company_city,
+          unscraped_company_state } = body;
+
+  const validTrades = ['electrician', 'hvac', 'welding', 'plumbing', 'carpentry', 'general'];
+  if (!validTrades.includes(trade_category)) {
+    return c.json({ error: `trade_category must be one of: ${validTrades.join(', ')}` }, 400);
+  }
+
+  const validTypes = ['full_time', 'part_time', 'contract', 'apprenticeship'];
+  if (!validTypes.includes(employment_type)) {
+    return c.json({ error: `employment_type must be one of: ${validTypes.join(', ')}` }, 400);
+  }
+
+  let finalCompanyId = company_id;
+  let companyName = '';
+  let finalCity = job_city;
+  let finalState = job_state;
+
+  if (unscraped_mode) {
+    // Create or find an unscraped placeholder company
+    if (!title?.trim() || !description?.trim() || !unscraped_company_name || !unscraped_company_city || !unscraped_company_state) {
+      return c.json({ error: 'title, description, company name, city, and state are required for unscraped listings' }, 400);
+    }
+    // Check for existing unscraped company with this name
+    let unscraped = await c.env.DB.prepare(
+      "SELECT id, company_name FROM companies WHERE company_name = ? AND description = 'Unscraped / Admin-posted listing'"
+    ).bind(unscraped_company_name).first<{ id: string; company_name: string }>();
+    if (!unscraped) {
+      // Create placeholder user + company (FK requires user_id to exist in users table)
+      const companyId = crypto.randomUUID().replace(/-/g, '');
+      const placeholderUserId = `unscraped_${companyId}`;
+      await c.env.DB.prepare(
+        "INSERT OR IGNORE INTO users (id, email, full_name) VALUES (?, ?, ?)"
+      ).bind(placeholderUserId, `${placeholderUserId}@placeholder.kraftworks.app`, `[Unscraped] ${unscraped_company_name}`).run();
+      await c.env.DB.prepare(`
+        INSERT INTO companies (id, user_id, company_name, company_email, city, state, status, description)
+        VALUES (?, ?, ?, ?, ?, ?, 'active', 'Unscraped / Admin-posted listing')
+      `).bind(companyId, placeholderUserId, unscraped_company_name, `admin@unscraped.placeholder`, unscraped_company_city, unscraped_company_state).run();
+      unscraped = { id: companyId, company_name: unscraped_company_name };
+    }
+    finalCompanyId = unscraped.id;
+    companyName = unscraped.company_name;
+    finalCity = unscraped_company_city;
+    finalState = unscraped_company_state;
+  } else {
+    if (!company_id || !job_city || !job_state) {
+      return c.json({ error: 'company, city, and state are required' }, 400);
+    }
+    if (!title?.trim() || !description?.trim()) {
+      return c.json({ error: 'title and description are required' }, 400);
+    }
+    // Verify company exists and is active
+    const company = await c.env.DB.prepare('SELECT id, company_name, status FROM companies WHERE id = ?').bind(company_id).first<{ id: string; company_name: string; status: string }>();
+    if (!company) return c.json({ error: 'Company not found' }, 404);
+    if (company.status !== 'active') {
+      return c.json({ error: 'Can only post jobs for active/approved companies' }, 400);
+    }
+    finalCompanyId = company_id;
+    companyName = company.company_name;
+  }
+
+  const jobId = crypto.randomUUID().replace(/-/g, '');
+  const jobStatus = status === 'active' ? 'active' : 'draft';
+
+  // Build INSERT columns and values
+  const insertCols = `id, company_id, posted_by, title, description, trade_category,
+    employment_type, experience_level, salary_min, salary_max, salary_period, city, state,
+    is_remote, requirements, benefits, application_deadline, status, internal_notes`;
+  const bindVals: any[] = [
+    jobId, finalCompanyId, userId, title, description, trade_category,
+    employment_type, experience_level || null,
+    salary_min || null, salary_max || null, salary_period || null,
+    finalCity, finalState, is_remote ? 1 : 0,
+    JSON.stringify(requirements || []),
+    JSON.stringify(benefits || []),
+    application_deadline || null,
+    jobStatus,
+    internal_notes || null,
+  ];
+
+  try {
+    await c.env.DB.prepare(`
+      INSERT INTO job_listings (${insertCols})
+      VALUES (${bindVals.map(() => '?').join(', ')})
+    `).bind(...bindVals).run();
+  } catch (err) {
+    console.error('[ADMIN CREATE JOB FAILED]', err);
+    return c.json({ error: 'Failed to create job listing. Please try again or contact support.' }, 500);
+  }
+
+  try {
+    await c.env.DB.prepare(`
+      INSERT INTO admin_audit_log (id, actor_user_id, entity_type, entity_id, action, after_json)
+      VALUES (?, ?, 'job_listing', ?, 'create', ?)
+    `).bind(
+      crypto.randomUUID().replace(/-/g, ''), userId, jobId,
+      JSON.stringify({ title, company_id: finalCompanyId, company_name: companyName, trade_category, employment_type, city: finalCity, state: finalState, status: jobStatus, unscraped: !!unscraped_mode, internal_notes: internal_notes || null })
+    ).run();
+  } catch (err) {
+    console.error('[ADMIN CREATE JOB AUDIT LOG FAILED]', err);
+  }
+
+  const job = await c.env.DB.prepare('SELECT * FROM job_listings WHERE id = ?').bind(jobId).first();
+  return c.json({
+    job: {
+      ...(job as any),
+      requirements: JSON.parse((job as any).requirements || '[]'),
+      benefits: JSON.parse((job as any).benefits || '[]'),
+      company_name: companyName,
+    }
+  }, 201);
+});
+
 // GET /api/admin/job-applications - List all applications (admin overview)
 admin.get('/job-applications', async (c) => {
   const { results } = await c.env.DB.prepare(`
@@ -1050,6 +1214,43 @@ admin.get('/job-applications', async (c) => {
     LIMIT 500
   `).all();
   return c.json({ applications: results || [] });
+});
+
+// POST /api/admin/users/sync - Sync users from Clerk that may have been missed by webhook
+admin.post('/users/sync', async (c) => {
+  try {
+    const response = await fetch('https://api.clerk.com/v1/users?limit=100&order_by=-created_at', {
+      headers: { 'Authorization': `Bearer ${c.env.CLERK_SECRET_KEY}` },
+    });
+    if (!response.ok) {
+      return c.json({ error: 'Failed to fetch users from Clerk' }, 500);
+    }
+    const clerkUsers = await response.json() as any[];
+    let synced = 0;
+    for (const cu of clerkUsers) {
+      const userId = cu.id;
+      const email = cu.email_addresses?.[0]?.email_address || '';
+      const fullName = [cu.first_name, cu.last_name].filter(Boolean).join(' ') || '';
+      const existing = await c.env.DB.prepare('SELECT id FROM users WHERE id = ?').bind(userId).first();
+      if (!existing) {
+        await c.env.DB.prepare(
+          "INSERT OR IGNORE INTO users (id, email, full_name) VALUES (?, ?, ?)"
+        ).bind(userId, email, fullName).run();
+        await c.env.DB.prepare(
+          "INSERT OR IGNORE INTO user_roles (user_id, role) VALUES (?, 'user')"
+        ).bind(userId).run();
+        synced++;
+      } else {
+        // Update email/name if changed
+        await c.env.DB.prepare(
+          "UPDATE users SET email = ?, full_name = ?, updated_at = datetime('now') WHERE id = ? AND (email != ? OR full_name != ?)"
+        ).bind(email, fullName, userId, email, fullName).run();
+      }
+    }
+    return c.json({ synced, total: clerkUsers.length });
+  } catch (err: any) {
+    return c.json({ error: err.message || 'Sync failed' }, 500);
+  }
 });
 
 export default admin;

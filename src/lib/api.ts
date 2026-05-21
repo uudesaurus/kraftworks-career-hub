@@ -11,27 +11,10 @@ class ApiError extends Error {
 }
 
 async function getAuthToken(): Promise<string | null> {
-  // Clerk exposes useAuth().getToken() — but we can't use hooks outside React.
-  // Instead, we access the Clerk instance directly via window.__clerk__
-  // The token is injected by the ClerkProvider and accessible via Clerk's JS API.
-  try {
-    const clerk = (window as any).__clerk_frontend_api
-      ? (window as any).Clerk
-      : (window as any).__clerk;
-
-    if (clerk?.session) {
-      return await clerk.session.getToken();
-    }
-
-    // Fallback: try the Clerk publishable API
-    if ((window as any).Clerk?.session) {
-      return await (window as any).Clerk.session.getToken();
-    }
-
-    return null;
-  } catch {
-    return null;
-  }
+  // Only use the registered token getter from the React useAuth hook.
+  // We no longer fall back to window.Clerk to avoid stale session cross-contamination
+  // between career and hiring dashboards.
+  return null;
 }
 
 // We'll provide a setTokenGetter so React components can inject the real getToken
@@ -42,8 +25,14 @@ export function setTokenGetter(getter: () => Promise<string | null>) {
 }
 
 async function resolveToken(): Promise<string | null> {
-  if (_tokenGetter) return _tokenGetter();
-  return getAuthToken();
+  if (_tokenGetter) {
+    try {
+      return await _tokenGetter();
+    } catch {
+      return null;
+    }
+  }
+  return null;
 }
 
 interface RequestOptions {
@@ -223,13 +212,14 @@ export const adminApi = {
   getUsers: () => request('/api/admin/users'),
   getUserDetail: (userId: string) => request(`/api/admin/users/${encodeURIComponent(userId)}`),
   exportUsersCSV: () => request('/api/admin/users/export') as Promise<Response>,
+  syncUsers: () => request('/api/admin/users/sync', { method: 'POST', body: {} }),
 
   // Career Fair Admin
   getCompanies: () => request('/api/admin/companies'),
   verifyCompany: (id: string) =>
     request(`/api/admin/companies/${encodeURIComponent(id)}/verify`, { method: 'PATCH' }),
-  updateCompanyStatus: (id: string, status: string) =>
-    request(`/api/admin/companies/${encodeURIComponent(id)}/status`, { method: 'PATCH', body: { status } }),
+  updateCompanyStatus: (id: string, status: string, adminNotes?: string) =>
+    request(`/api/admin/companies/${encodeURIComponent(id)}/status`, { method: 'PATCH', body: { status, admin_notes: adminNotes } }),
   togglePartner: (id: string) =>
     request(`/api/admin/companies/${encodeURIComponent(id)}/partner`, { method: 'PATCH' }),
   getAllJobs: () => request('/api/admin/jobs'),
@@ -237,6 +227,8 @@ export const adminApi = {
     request(`/api/admin/jobs/${encodeURIComponent(id)}/status`, { method: 'PATCH', body: { status } }),
   toggleFeatured: (id: string) =>
     request(`/api/admin/jobs/${encodeURIComponent(id)}/feature`, { method: 'PATCH' }),
+  createJob: (data: Record<string, any>) =>
+    request('/api/admin/jobs', { method: 'POST', body: data }),
   getAllApplications: () => request('/api/admin/job-applications'),
   getNewsletterSubscribers: () => request('/api/admin/newsletter/subscribers'),
   deleteSubscriber: (id: string) =>
@@ -342,3 +334,4 @@ export const jobSeekerApi = {
 };
 
 export { ApiError };
+export { request };

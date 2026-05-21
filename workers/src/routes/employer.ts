@@ -2,8 +2,9 @@ import { Hono } from 'hono';
 import type { Env, CompanyRow, JobListingRow, JobApplicationRow, UserRow, EmployerAccessRequestRow } from '../types';
 import { employerGuard } from '../middleware/employerGuard';
 import { sendEmail, companyRegistrationEmail, adminNewCompanyEmail, jobPostedEmail, applicationStatusUpdateEmail, employerAccessRequestSubmittedEmail, adminEmployerAccessRequestEmail } from '../lib/resend';
+import { getAdminEmails } from '../lib/admin-notify';
 
-const employer = new Hono<{ Bindings: Env; Variables: { userId: string } }>();
+const employer = new Hono<{ Bindings: Env; Variables: { userId: string; email?: string } }>();
 
 // ==================== Employer Access Requests ====================
 // Employees must request access before becoming employers.
@@ -20,6 +21,16 @@ employer.get('/access-request', async (c) => {
 // POST /api/employer/access-request - Submit request to become employer
 employer.post('/access-request', async (c) => {
   const userId = c.get('userId');
+  const userEmail = c.get('email');
+
+  // Ensure user row exists (Clerk webhook may be delayed)
+  const existingUser = await c.env.DB.prepare('SELECT id, email, full_name FROM users WHERE id = ?').bind(userId).first<UserRow>();
+  if (!existingUser) {
+    const placeholderEmail = userEmail || `${userId}@placeholder.kraftworks.app`;
+    await c.env.DB.prepare(`
+      INSERT INTO users (id, email) VALUES (?, ?)
+    `).bind(userId, placeholderEmail).run();
+  }
 
   // Check if already has employer role
   const role = await c.env.DB.prepare(
@@ -50,38 +61,58 @@ employer.post('/access-request', async (c) => {
 
   const requestId = crypto.randomUUID().replace(/-/g, '');
 
-  await c.env.DB.prepare(`
-    INSERT INTO employer_access_requests (id, user_id, company_name, company_email, company_phone,
-      company_website, industry, company_size, description, city, state)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).bind(
-    requestId, userId, company_name, company_email,
-    company_phone || null, company_website || null,
-    industry || null, company_size || null, description || null,
-    city, state
-  ).run();
-
-  // Audit log
-  await c.env.DB.prepare(`
-    INSERT INTO admin_audit_log (id, actor_user_id, entity_type, entity_id, action, after_json)
-    VALUES (?, ?, 'employer_access_request', ?, 'create', ?)
-  `).bind(
-    crypto.randomUUID().replace(/-/g, ''), userId, requestId,
-    JSON.stringify({ company_name, company_email, city, state })
-  ).run();
-
-  // Email: confirmation to requester + admin alert
   try {
-    const user = await c.env.DB.prepare('SELECT * FROM users WHERE id = ?').bind(userId).first<UserRow>();
-    if (user?.email) {
+    await c.env.DB.prepare(`
+      INSERT INTO employer_access_requests (id, user_id, company_name, company_email, company_phone,
+        company_website, industry, company_size, description, city, state)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      requestId, userId, company_name, company_email,
+      company_phone || null, company_website || null,
+      industry || null, company_size || null, description || null,
+      city, state
+    ).run();
+  } catch (err) {
+    console.error('[EMPLOYER ACCESS REQUEST FAILED]', err);
+    return c.json({ error: 'Failed to save request. Please try again.' }, 500);
+  }
+
+  // Audit log (non-blocking)
+  try {
+    await c.env.DB.prepare(`
+      INSERT INTO admin_audit_log (id, actor_user_id, entity_type, entity_id, action, after_json)
+      VALUES (?, ?, 'employer_access_request', ?, 'create', ?)
+    `).bind(
+      crypto.randomUUID().replace(/-/g, ''), userId, requestId,
+      JSON.stringify({ company_name, company_email, city, state })
+    ).run();
+  } catch (err) {
+    console.error('[AUDIT LOG FAILED]', err);
+  }
+
+  // Email: confirmation to requester + admin alert (non-blocking but logged)
+  try {
+    const user = existingUser || await c.env.DB.prepare('SELECT * FROM users WHERE id = ?').bind(userId).first<UserRow>();
+    if (user?.email && !user.email.endsWith('@placeholder.kraftworks.app')) {
       const tpl = employerAccessRequestSubmittedEmail(user.full_name || 'there', company_name);
-      sendEmail(c.env.RESEND_API_KEY, { to: user.email, subject: tpl.subject, html: tpl.html }, c.env.SANDBOX_MODE === 'true').catch(() => {});
+      const result = await sendEmail(c.env.RESEND_API_KEY, { to: user.email, subject: tpl.subject, html: tpl.html }, c.env.SANDBOX_MODE === 'true');
+      if (!result) console.error(`[EMAIL FAILED] access-request confirmation to=${user.email}`);
     }
-    if (c.env.ADMIN_EMAIL) {
+    const adminEmails = await getAdminEmails(c.env.DB, c.env.ADMIN_EMAIL);
+    console.log(`[ACCESS REQUEST] Notifying ${adminEmails.length} admin(s): ${adminEmails.join(', ')}`);
+    if (adminEmails.length > 0) {
       const adminTpl = adminEmployerAccessRequestEmail(company_name, company_email, user?.full_name || 'Unknown', city, state);
-      sendEmail(c.env.RESEND_API_KEY, { to: c.env.ADMIN_EMAIL, subject: adminTpl.subject, html: adminTpl.html }, c.env.SANDBOX_MODE === 'true').catch(() => {});
+      for (const adminEmail of adminEmails) {
+        const result = await sendEmail(c.env.RESEND_API_KEY, { to: adminEmail, subject: adminTpl.subject, html: adminTpl.html }, c.env.SANDBOX_MODE === 'true');
+        if (!result) console.error(`[ADMIN EMAIL FAILED] to=${adminEmail} subject=${adminTpl.subject}`);
+        else console.log(`[ADMIN EMAIL OK] id=${result.id} to=${adminEmail}`);
+      }
+    } else {
+      console.error('[ADMIN EMAIL] No admin emails found to notify!');
     }
-  } catch { /* non-blocking */ }
+  } catch (err) {
+    console.error('[ACCESS REQUEST EMAIL ERROR]', err);
+  }
 
   const request = await c.env.DB.prepare('SELECT * FROM employer_access_requests WHERE id = ?').bind(requestId).first();
   return c.json({ request }, 201);
@@ -184,9 +215,12 @@ employer.post('/company', async (c) => {
       const tpl = companyRegistrationEmail(user.full_name || 'there', company_name);
       sendEmail(c.env.RESEND_API_KEY, { to: user.email, subject: tpl.subject, html: tpl.html }, c.env.SANDBOX_MODE === 'true').catch(() => {});
     }
-    if (c.env.ADMIN_EMAIL) {
+    const adminEmails = await getAdminEmails(c.env.DB, c.env.ADMIN_EMAIL);
+    if (adminEmails.length > 0) {
       const adminTpl = adminNewCompanyEmail(company_name, company_email, user?.full_name || 'Unknown', city, state);
-      sendEmail(c.env.RESEND_API_KEY, { to: c.env.ADMIN_EMAIL, subject: adminTpl.subject, html: adminTpl.html }, c.env.SANDBOX_MODE === 'true').catch(() => {});
+      for (const adminEmail of adminEmails) {
+        sendEmail(c.env.RESEND_API_KEY, { to: adminEmail, subject: adminTpl.subject, html: adminTpl.html }, c.env.SANDBOX_MODE === 'true').catch(() => {});
+      }
     }
   } catch { /* non-blocking */ }
 
@@ -204,7 +238,7 @@ employer.put('/company', async (c) => {
 
   const body = await c.req.json();
   const fields = ['company_name', 'company_email', 'company_phone', 'company_website',
-    'company_logo_url', 'industry', 'company_size', 'description', 'city', 'state'];
+    'company_logo_url', 'industry', 'company_size', 'description', 'city', 'state', 'internal_notes'];
 
   const updates: string[] = [];
   const values: any[] = [];
@@ -273,12 +307,18 @@ employer.post('/jobs', async (c) => {
 
   if (!company) return c.json({ error: 'Create a company profile first' }, 400);
 
+  if ((company as any).status !== 'active') {
+    return c.json({
+      error: 'Your company profile is still pending admin review. You will receive an email notification once approved, then you can start posting jobs.'
+    }, 403);
+  }
+
   const body = await c.req.json();
   const { title, description, trade_category, employment_type, experience_level,
           salary_min, salary_max, salary_period, city, state, is_remote,
           requirements, benefits, application_deadline, status } = body;
 
-  if (!title || !description || !trade_category || !employment_type || !city || !state) {
+  if (!title?.trim() || !description?.trim() || !trade_category || !employment_type || !city || !state) {
     return c.json({ error: 'title, description, trade_category, employment_type, city, and state are required' }, 400);
   }
 
@@ -295,21 +335,26 @@ employer.post('/jobs', async (c) => {
   const jobId = crypto.randomUUID().replace(/-/g, '');
   const jobStatus = status === 'draft' ? 'draft' : 'active';
 
-  await c.env.DB.prepare(`
-    INSERT INTO job_listings (id, company_id, posted_by, title, description, trade_category,
-      employment_type, experience_level, salary_min, salary_max, salary_period, city, state,
-      is_remote, requirements, benefits, application_deadline, status)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).bind(
-    jobId, company.id, userId, title, description, trade_category,
-    employment_type, experience_level || null,
-    salary_min || null, salary_max || null, salary_period || null,
-    city, state, is_remote ? 1 : 0,
-    JSON.stringify(requirements || []),
-    JSON.stringify(benefits || []),
-    application_deadline || null,
-    jobStatus
-  ).run();
+  try {
+    await c.env.DB.prepare(`
+      INSERT INTO job_listings (id, company_id, posted_by, title, description, trade_category,
+        employment_type, experience_level, salary_min, salary_max, salary_period, city, state,
+        is_remote, requirements, benefits, application_deadline, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).bind(
+      jobId, company.id, userId, title, description, trade_category,
+      employment_type, experience_level || null,
+      salary_min || null, salary_max || null, salary_period || null,
+      city, state, is_remote ? 1 : 0,
+      JSON.stringify(requirements || []),
+      JSON.stringify(benefits || []),
+      application_deadline || null,
+      jobStatus
+    ).run();
+  } catch (err) {
+    console.error('[EMPLOYER JOB CREATE FAILED]', err);
+    return c.json({ error: `Failed to save job listing: ${(err as any)?.message || 'Unknown error'}` }, 500);
+  }
 
   const job = await c.env.DB.prepare('SELECT * FROM job_listings WHERE id = ?').bind(jobId).first();
 

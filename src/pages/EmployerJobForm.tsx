@@ -128,8 +128,8 @@ export default function EmployerJobForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.title.trim() || !form.trade_category || !form.employment_type || !form.city.trim() || !form.state) {
-      toast.error('Please fill in all required fields');
+    if (!form.title.trim() || !form.description.trim() || !form.trade_category || !form.employment_type || !form.city.trim() || !form.state) {
+      toast.error('Please fill in all required fields (title, description, trade, type, city, state)');
       return;
     }
     setSubmitting(true);
@@ -160,7 +160,7 @@ export default function EmployerJobForm() {
       }
       navigate('/employer/jobs');
     } catch (err: any) {
-      toast.error(err?.message || 'Failed to save');
+      toast.error(err?.message || 'Failed to save job listing');
     }
     setSubmitting(false);
   };
@@ -226,8 +226,8 @@ export default function EmployerJobForm() {
 
               {/* Description */}
               <div className="space-y-1.5">
-                <Label>Job Description</Label>
-                <Textarea value={form.description} onChange={e => update('description', e.target.value)} placeholder="Describe the role, responsibilities, and what a typical day looks like..." rows={6} />
+                <Label>Job Description *</Label>
+                <Textarea value={form.description} onChange={e => update('description', e.target.value)} placeholder="Describe the role, responsibilities, and what a typical day looks like..." rows={6} required />
               </div>
 
               {/* Location */}

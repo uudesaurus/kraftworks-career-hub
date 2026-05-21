@@ -11,6 +11,7 @@ const MAIN_APP_URL = import.meta.env.VITE_MAIN_APP_URL || 'https://career.kraftw
 export default function EmployerAuth() {
   const { user, loading } = useAuth();
   const [mode, setMode] = useState<'sign-in' | 'sign-up'>('sign-in');
+  const currentOrigin = typeof window !== 'undefined' ? window.location.origin : 'https://hiring.kraftworks.app';
 
   if (loading) {
     return (
@@ -46,29 +47,33 @@ export default function EmployerAuth() {
           </div>
 
           <div className="flex justify-center">
-            {mode === 'sign-in' ? (
-              <SignIn
-                routing="hash"
-                forceRedirectUrl="/employer"
-                appearance={{
-                  elements: {
-                    rootBox: 'w-full',
-                    card: 'shadow-lg border border-border rounded-xl',
-                  },
-                }}
-              />
-            ) : (
-              <SignUp
-                routing="hash"
-                forceRedirectUrl="/employer/register"
-                appearance={{
-                  elements: {
-                    rootBox: 'w-full',
-                    card: 'shadow-lg border border-border rounded-xl',
-                  },
-                }}
-              />
-            )}
+            <div style={{ width: '100%', maxWidth: '440px' }}>
+              <div className="mx-auto" style={{ width: '100%', maxWidth: '420px' }}>
+                {mode === 'sign-in' ? (
+                  <SignIn
+                    routing="hash"
+                    forceRedirectUrl={`${currentOrigin}/employer`}
+                    appearance={{
+                      elements: {
+                        rootBox: 'w-full',
+                        card: 'shadow-lg border border-border rounded-xl w-full',
+                      },
+                    }}
+                  />
+                ) : (
+                  <SignUp
+                    routing="hash"
+                    forceRedirectUrl={`${currentOrigin}/employer/register`}
+                    appearance={{
+                      elements: {
+                        rootBox: 'w-full',
+                        card: 'shadow-lg border border-border rounded-xl w-full',
+                      },
+                    }}
+                  />
+                )}
+              </div>
+            </div>
           </div>
 
           <div className="mt-4 text-center">

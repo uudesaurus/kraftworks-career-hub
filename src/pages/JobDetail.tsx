@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { PageLayout } from '@/components/PageLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,13 +9,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { CompanyBadge } from '@/components/CompanyBadge';
 import { ApplicationStatusBadge } from '@/components/ApplicationStatusBadge';
-import { publicJobsApi, jobSeekerApi } from '@/lib/api';
+import { publicJobsApi, jobSeekerApi, resumeApi } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
 import {
   ArrowLeft, MapPin, DollarSign, Clock, Briefcase, Star,
   Building2, Globe, Mail, Phone, CheckCircle2, Send, XCircle,
-  CalendarDays, Loader2,
+  CalendarDays, Loader2, FileText,
 } from 'lucide-react';
 
 const tradeLabels: Record<string, string> = {
@@ -82,9 +82,12 @@ function formatSalary(min?: number | null, max?: number | null, period?: string 
 export default function JobDetail() {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [job, setJob] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [applyOpen, setApplyOpen] = useState(false);
+  const [activeResume, setActiveResume] = useState<any>(null);
+  const [loadingResume, setLoadingResume] = useState(false);
   const [coverLetter, setCoverLetter] = useState('');
   const [applying, setApplying] = useState(false);
   const [existingApplication, setExistingApplication] = useState<any>(null);
@@ -118,11 +121,31 @@ export default function JobDetail() {
     })();
   }, [id, user]);
 
+  // Load user's active resume when apply dialog opens
+  useEffect(() => {
+    if (!applyOpen || !user) return;
+    setActiveResume(null); // Reset so button stays disabled while fetching
+    (async () => {
+      setLoadingResume(true);
+      try {
+        const data = await resumeApi.getDetails();
+        setActiveResume(data.resume || null);
+      } catch {
+        setActiveResume(null);
+      }
+      setLoadingResume(false);
+    })();
+  }, [applyOpen, user]);
+
   const handleApply = async () => {
     if (!id) return;
+    if (!activeResume) {
+      toast.error('Please upload a resume before applying.');
+      return;
+    }
     setApplying(true);
     try {
-      const result = await jobSeekerApi.applyToJob(id, { cover_letter: coverLetter || undefined });
+      const result = await jobSeekerApi.applyToJob(id, { resume_id: activeResume.id, cover_letter: coverLetter || undefined });
       toast.success('Application submitted! The employer will review it soon.');
       setExistingApplication({
         id: result.application?.id,
@@ -134,9 +157,9 @@ export default function JobDetail() {
       });
       setApplyOpen(false);
       setCoverLetter('');
+      setActiveResume(null);
     } catch (err: any) {
       if (err?.status === 409) {
-        // Already applied — refresh status
         try {
           const data = await jobSeekerApi.getApplicationStatus(id);
           if (data.applied) setExistingApplication(data.application);
@@ -342,12 +365,36 @@ export default function JobDetail() {
           </DialogHeader>
           <div className="space-y-4">
             <div>
+              <label className="text-sm font-medium mb-1.5 block flex items-center gap-1.5">
+                <FileText className="h-3.5 w-3.5" />
+                Resume <span className="text-destructive">*</span>
+              </label>
+              {loadingResume ? (
+                <div className="h-10 rounded-md border bg-muted animate-pulse" />
+              ) : activeResume ? (
+                <div className="flex items-center gap-3 p-3 rounded-md border border-green-200 bg-green-50">
+                  <CheckCircle2 className="h-5 w-5 text-green-600 shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate">{activeResume.file_name}</p>
+                    {activeResume.trade_program && <p className="text-xs text-muted-foreground">{activeResume.trade_program}</p>}
+                  </div>
+                </div>
+              ) : (
+                <div className="p-3 rounded-md border border-amber-200 bg-amber-50 text-sm text-amber-800">
+                  You need to upload a resume before applying.{' '}
+                  <button type="button" onClick={() => { setApplyOpen(false); navigate('/resume-review'); }} className="underline font-medium">
+                    Upload now
+                  </button>
+                </div>
+              )}
+            </div>
+            <div>
               <label className="text-sm font-medium mb-1.5 block">Cover Letter (optional)</label>
               <Textarea
                 placeholder="Tell the employer why you're a great fit..."
                 value={coverLetter}
                 onChange={(e) => setCoverLetter(e.target.value)}
-                rows={6}
+                rows={4}
               />
               <p className="text-xs text-muted-foreground mt-1.5">
                 A short introduction can help you stand out. Keep it focused on your relevant skills.
@@ -356,7 +403,7 @@ export default function JobDetail() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setApplyOpen(false)}>Cancel</Button>
-            <Button onClick={handleApply} disabled={applying}>
+            <Button onClick={handleApply} disabled={applying || !activeResume || loadingResume}>
               {applying ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Submitting...</> : <><Send className="mr-2 h-4 w-4" />Submit Application</>}
             </Button>
           </DialogFooter>

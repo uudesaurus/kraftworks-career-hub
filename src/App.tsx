@@ -9,6 +9,7 @@ import { FeedbackGenerationProvider } from '@/contexts/FeedbackGenerationContext
 import Landing from "./pages/Landing";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
+import ProfileSetup from "./pages/ProfileSetup";
 import ResumeReview from "./pages/ResumeReview";
 import InterviewPrep from "./pages/InterviewPrep";
 import CareerToolkit from "./pages/CareerToolkit";
@@ -47,6 +48,7 @@ function AppRoutes() {
           <Route path="/" element={<Landing />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/profile-setup" element={<ProtectedRoute><ProfileSetup /></ProtectedRoute>} />
           <Route path="/resume-review" element={<ProtectedRoute><ResumeReview /></ProtectedRoute>} />
           <Route path="/interview-prep" element={<ProtectedRoute><InterviewPrep /></ProtectedRoute>} />
           <Route path="/career-toolkit" element={<CareerToolkit />} />

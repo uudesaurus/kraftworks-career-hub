@@ -19,6 +19,10 @@ export interface UserRow {
   id: string;
   email: string;
   full_name: string | null;
+  phone: string | null;
+  trade_type: string | null;
+  work_types: string | null; // JSON array
+  marketing_consent: number;
   credit_limit: number;
   credit_used_adj: number;
   created_at: string;

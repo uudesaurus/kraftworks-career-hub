@@ -55,7 +55,13 @@ const EmployerApp = () => {
   }
 
   return (
-    <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY!}>
+    <ClerkProvider
+      publishableKey={CLERK_PUBLISHABLE_KEY!}
+      signInUrl="/employer/auth"
+      signUpUrl="/employer/auth"
+      afterSignInUrl="/employer"
+      afterSignUpUrl="/employer/register"
+    >
       <QueryClientProvider client={queryClient}>
         <EmployerRoutes />
       </QueryClientProvider>

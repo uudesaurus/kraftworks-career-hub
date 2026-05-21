@@ -8,6 +8,7 @@ import {
   mockAICall,
 } from '../lib/openrouter';
 import { sendEmail, adminResumeNotificationEmail, feedbackReportEmail } from '../lib/resend';
+import { getAdminEmails } from '../lib/admin-notify';
 
 function arrayBufferToBase64(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer);
@@ -135,14 +136,17 @@ feedback.post('/generate', async (c) => {
     VALUES (?, ?, 'resume_feedback', ?, ?)
   `).bind(crypto.randomUUID().replace(/-/g, ''), userId, inputHash, modelName).run();
 
-  // Send admin notification email (fire-and-forget)
+  // Send admin notification emails (fire-and-forget)
   const user = await c.env.DB.prepare('SELECT full_name, email FROM users WHERE id = ?').bind(userId).first<{ full_name: string; email: string }>();
-  if (user && c.env.ADMIN_EMAIL) {
+  const adminEmails = await getAdminEmails(c.env.DB, c.env.ADMIN_EMAIL);
+  if (user && adminEmails.length > 0) {
     const emailContent = adminResumeNotificationEmail(user.full_name || user.email, resume.file_name);
-    sendEmail(c.env.RESEND_API_KEY, {
-      to: c.env.ADMIN_EMAIL,
-      ...emailContent,
-    }, isSandbox(c.env)).catch(() => {}); // Fire-and-forget
+    for (const adminEmail of adminEmails) {
+      sendEmail(c.env.RESEND_API_KEY, {
+        to: adminEmail,
+        ...emailContent,
+      }, isSandbox(c.env)).catch(() => {});
+    }
   }
 
   // Return the feedback record

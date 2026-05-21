@@ -417,7 +417,7 @@ const ResumeReview = () => {
             <CardDescription>
               {resume
                 ? 'You can replace your resume by uploading a new one.'
-                : 'We\'ll review it and give you actionable feedback to help you stand out.'}
+                : 'Upload a PDF resume to get AI-powered feedback and improve your job applications.'}
             </CardDescription>
           </CardHeader>
           <CardContent>

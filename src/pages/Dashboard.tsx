@@ -1,4 +1,5 @@
 import { DashboardLayout } from '@/components/DashboardLayout';
+import { DashboardErrorBoundary } from '@/components/DashboardErrorBoundary';
 import { useAuth } from '@/hooks/useAuth';
 import { useResume } from '@/hooks/useResume';
 import { useAIUsage } from '@/hooks/useAIUsage';
@@ -11,7 +12,7 @@ import { FileText, Upload, CheckCircle, Clock, MessageSquare, ArrowRight, Sparkl
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useResumeFeedback } from '@/hooks/useResumeFeedback';
-import { questionsApi, publicJobsApi } from '@/lib/api';
+import { questionsApi, publicJobsApi, userApi } from '@/lib/api';
 import { useState, useEffect } from 'react';
 
 const fadeIn = {
@@ -26,8 +27,26 @@ const Dashboard = () => {
   const { remaining, maxActions, loading: usageLoading } = useAIUsage();
   const { feedback, loading: feedbackLoading } = useResumeFeedback();
   const navigate = useNavigate();
-  const firstName = user?.user_metadata?.full_name?.split(' ')[0] || 'there';
-  const usedActions = maxActions - remaining;
+
+  // Check if user needs profile setup via API — redirect if trade_type not set
+  const [profileComplete, setProfileComplete] = useState<boolean | null>(null);
+  useEffect(() => {
+    if (!user || resumeLoading) return;
+    const check = async () => {
+      try {
+        const data = await userApi.getProfile() as any;
+        const u = data?.user;
+        setProfileComplete(!!u?.trade_type);
+        if (!u?.trade_type) {
+          navigate('/profile-setup', { replace: true });
+        }
+      } catch (err) {
+        console.error('[Dashboard] Failed to fetch profile:', err);
+        setProfileComplete(true); // fallback: show dashboard
+      }
+    };
+    check();
+  }, [user, resumeLoading, navigate]);
 
   // Fetch latest interview questions result
   const [latestInterview, setLatestInterview] = useState<{ total: number; date: string } | null>(null);
@@ -42,7 +61,7 @@ const Dashboard = () => {
         const s = Array.isArray(latest.situational) ? latest.situational.length : 0;
         setLatestInterview({ total: t + b + s, date: latest.created_at });
       }
-    }).catch(() => {});
+    }).catch((err) => { console.error('[Dashboard] Failed to fetch questions:', err); });
   }, [user]);
 
   // Fetch suggested jobs based on trade program
@@ -67,14 +86,34 @@ const Dashboard = () => {
           limit: 3,
         });
         setSuggestedJobs(data.jobs || []);
-      } catch {}
+      } catch (err) { console.error('[Dashboard] Failed to fetch jobs:', err); }
       setJobsLoading(false);
     };
     fetchJobs();
   }, [resume]);
 
+  // Don't render dashboard until profile check resolves
+  if (profileComplete === null) {
+    return (
+      <DashboardLayout>
+        <div className="max-w-5xl mx-auto space-y-6">
+          <Skeleton className="h-8 w-64" />
+          <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {[1,2,3].map(i => <Skeleton key={i} className="h-48" />)}
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (profileComplete === false) return null; // Redirect in progress
+
+  const firstName = user?.user_metadata?.full_name?.split(' ')[0] || 'there';
+  const usedActions = maxActions - remaining;
+
   return (
     <DashboardLayout>
+    <DashboardErrorBoundary>
       <div className="max-w-5xl mx-auto space-y-6">
         <motion.div {...fadeIn}>
           <h1 className="text-2xl sm:text-3xl font-heading font-bold text-foreground">
@@ -120,12 +159,6 @@ const Dashboard = () => {
                       <div className="flex items-center gap-2 p-2 rounded-lg bg-accent text-xs">
                         <CheckCircle className="h-3.5 w-3.5 text-primary shrink-0" />
                         <span className="text-foreground font-medium">Feedback Ready</span>
-                      </div>
-                    )}
-                    {feedback?.status === 'pending_review' && (
-                      <div className="flex items-center gap-2 p-2 rounded-lg bg-accent text-xs">
-                        <Clock className="h-3.5 w-3.5 text-primary shrink-0" />
-                        <span className="text-foreground font-medium">Feedback Pending Review</span>
                       </div>
                     )}
                     <Button
@@ -460,7 +493,8 @@ const Dashboard = () => {
           </Card>
         </motion.div>
       </div>
-    </DashboardLayout>
+    </DashboardErrorBoundary>
+  </DashboardLayout>
   );
 };
 

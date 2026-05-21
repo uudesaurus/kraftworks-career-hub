@@ -7,6 +7,7 @@ import {
   contactAcknowledgmentEmail,
   contactAdminNotificationEmail,
 } from '../lib/resend';
+import { getAdminEmails } from '../lib/admin-notify';
 
 const publicRoutes = new Hono<{ Bindings: Env }>();
 
@@ -153,18 +154,21 @@ publicRoutes.post('/contact', async (c) => {
     ...ackEmail,
   }, c.env.SANDBOX_MODE === 'true').catch(() => {});
 
-  // Notify admin (fire-and-forget)
-  if (c.env.ADMIN_EMAIL) {
-    const adminEmail = contactAdminNotificationEmail(
+  // Notify all admins (fire-and-forget)
+  const adminEmails = await getAdminEmails(c.env.DB, c.env.ADMIN_EMAIL);
+  if (adminEmails.length > 0) {
+    const adminEmailContent = contactAdminNotificationEmail(
       body.full_name.trim(),
       body.email.trim(),
       body.subject?.trim() || null,
       body.message.trim(),
     );
-    sendEmail(c.env.RESEND_API_KEY, {
-      to: c.env.ADMIN_EMAIL,
-      ...adminEmail,
-    }, c.env.SANDBOX_MODE === 'true').catch(() => {});
+    for (const adminEmail of adminEmails) {
+      sendEmail(c.env.RESEND_API_KEY, {
+        to: adminEmail,
+        ...adminEmailContent,
+      }, c.env.SANDBOX_MODE === 'true').catch(() => {});
+    }
   }
 
   return c.json({ success: true }, 201);

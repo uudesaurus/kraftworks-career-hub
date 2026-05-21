@@ -26,20 +26,22 @@ jobs.post('/:id/apply', async (c) => {
   const body = await c.req.json().catch(() => ({}));
   const { resume_id, cover_letter } = body as any;
 
-  // If resume_id provided, verify it belongs to user
-  if (resume_id) {
-    const resume = await c.env.DB.prepare(
-      'SELECT id FROM resumes WHERE id = ? AND user_id = ?'
-    ).bind(resume_id, userId).first();
-    if (!resume) return c.json({ error: 'Resume not found' }, 400);
+  // Resume is required
+  if (!resume_id) {
+    return c.json({ error: 'Please attach your resume before applying. Go to Resume Review to upload one.' }, 400);
   }
+
+  const resume = await c.env.DB.prepare(
+    'SELECT id FROM resumes WHERE id = ? AND user_id = ?'
+  ).bind(resume_id, userId).first();
+  if (!resume) return c.json({ error: 'Resume not found' }, 400);
 
   const appId = crypto.randomUUID().replace(/-/g, '');
 
   await c.env.DB.prepare(`
     INSERT INTO job_applications (id, job_id, user_id, resume_id, cover_letter)
     VALUES (?, ?, ?, ?, ?)
-  `).bind(appId, jobId, userId, resume_id || null, cover_letter || null).run();
+  `).bind(appId, jobId, userId, resume_id, cover_letter || null).run();
 
   // Email: applicant confirmation + employer notification
   try {
@@ -54,13 +56,17 @@ jobs.post('/:id/apply', async (c) => {
     `).bind(jobId, userId).first<{ title: string; company_name: string; company_email: string; employer_name: string; applicant_name: string; applicant_email: string }>();
     if (info) {
       const applicantTpl = applicationSubmittedEmail(info.applicant_name || 'there', info.title, info.company_name);
-      sendEmail(c.env.RESEND_API_KEY, { to: info.applicant_email, subject: applicantTpl.subject, html: applicantTpl.html }, c.env.SANDBOX_MODE === 'true').catch(() => {});
+      const applicantResult = await sendEmail(c.env.RESEND_API_KEY, { to: info.applicant_email, subject: applicantTpl.subject, html: applicantTpl.html }, c.env.SANDBOX_MODE === 'true');
+      if (!applicantResult) console.error(`[EMAIL FAILED] applicant=${info.applicant_email} subject=${applicantTpl.subject}`);
       if (info.company_email) {
         const employerTpl = newApplicationReceivedEmail(info.employer_name || 'there', info.applicant_name || 'An applicant', info.title);
-        sendEmail(c.env.RESEND_API_KEY, { to: info.company_email, subject: employerTpl.subject, html: employerTpl.html }, c.env.SANDBOX_MODE === 'true').catch(() => {});
+        const employerResult = await sendEmail(c.env.RESEND_API_KEY, { to: info.company_email, subject: employerTpl.subject, html: employerTpl.html }, c.env.SANDBOX_MODE === 'true');
+        if (!employerResult) console.error(`[EMAIL FAILED] employer=${info.company_email} subject=${employerTpl.subject}`);
       }
     }
-  } catch { /* non-blocking */ }
+  } catch (err) {
+    console.error('[EMAIL FAILED] application confirmation email error:', err);
+  }
 
   return c.json({ application: { id: appId, job_id: jobId, status: 'submitted' } }, 201);
 });
@@ -134,13 +140,17 @@ jobs.delete('/applications/:id', async (c) => {
     `).bind(appId).first<{ title: string; company_name: string; company_email: string; employer_name: string; applicant_name: string; applicant_email: string }>();
     if (info) {
       const applicantTpl = applicationWithdrawnEmail(info.applicant_name || 'there', info.title, info.company_name);
-      sendEmail(c.env.RESEND_API_KEY, { to: info.applicant_email, subject: applicantTpl.subject, html: applicantTpl.html }, c.env.SANDBOX_MODE === 'true').catch(() => {});
+      const applicantResult = await sendEmail(c.env.RESEND_API_KEY, { to: info.applicant_email, subject: applicantTpl.subject, html: applicantTpl.html }, c.env.SANDBOX_MODE === 'true');
+      if (!applicantResult) console.error(`[EMAIL FAILED] withdrawal applicant=${info.applicant_email}`);
       if (info.company_email) {
         const employerTpl = applicationWithdrawnEmployerEmail(info.employer_name || 'there', info.applicant_name || 'An applicant', info.title);
-        sendEmail(c.env.RESEND_API_KEY, { to: info.company_email, subject: employerTpl.subject, html: employerTpl.html }, c.env.SANDBOX_MODE === 'true').catch(() => {});
+        const employerResult = await sendEmail(c.env.RESEND_API_KEY, { to: info.company_email, subject: employerTpl.subject, html: employerTpl.html }, c.env.SANDBOX_MODE === 'true');
+        if (!employerResult) console.error(`[EMAIL FAILED] withdrawal employer=${info.company_email}`);
       }
     }
-  } catch { /* non-blocking */ }
+  } catch (err) {
+    console.error('[EMAIL FAILED] withdrawal email error:', err);
+  }
 
   return c.json({ success: true });
 });

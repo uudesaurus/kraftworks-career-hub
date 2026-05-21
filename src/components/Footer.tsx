@@ -162,8 +162,11 @@ export function Footer() {
           <div>
             <h4 className="text-sm font-semibold text-foreground mb-3">Kraftworks</h4>
             <p className="text-sm text-muted-foreground mb-3">Built for the trades.</p>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground mb-1">
               <a href="mailto:info@kraftworks.app" className="hover:text-foreground transition-colors">info@kraftworks.app</a>
+            </p>
+            <p className="text-sm text-muted-foreground">
+              <a href="https://www.kraftworks.ai" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">www.kraftworks.ai</a>
             </p>
           </div>
         </div>

@@ -343,7 +343,7 @@ function FeedbackHistoryItem({ feedback }: { feedback: ResumeFeedback }) {
             Resume Feedback
           </p>
           <Badge variant={feedback.status === 'approved' ? 'default' : feedback.status === 'rejected' ? 'destructive' : 'secondary'} className="text-[10px] px-1.5 py-0">
-            {feedback.status === 'pending_review' ? 'Pending Review' : feedback.status === 'approved' ? 'Reviewed' : feedback.status.charAt(0).toUpperCase() + feedback.status.slice(1)}
+            {feedback.status === 'approved' ? 'Reviewed' : feedback.status === 'rejected' ? 'Rejected' : 'Reviewed'}
           </Badge>
         </div>
         <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">

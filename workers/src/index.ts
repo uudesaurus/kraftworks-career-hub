@@ -12,6 +12,7 @@ import webhookRoutes from './routes/webhook';
 import publicJobRoutes from './routes/publicJobs';
 import employerRoutes from './routes/employer';
 import jobRoutes from './routes/jobs';
+import { getAdminEmails } from './lib/admin-notify';
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -44,6 +45,35 @@ app.use('/api/*', cors({
 
 // Health check
 app.get('/api/health', (c) => c.json({ status: 'ok', timestamp: new Date().toISOString() }));
+
+// Debug: test Resend email directly
+app.post('/api/debug/email', async (c) => {
+  if (c.env.RESEND_API_KEY) {
+    const adminEmails = await getAdminEmails(c.env.DB, c.env.ADMIN_EMAIL);
+    const toEmail = adminEmails[0] || 'no-admin-found@example.com';
+    const testEmail = {
+      from: 'Kraftworks <career@kraftworks.app>',
+      to: toEmail,
+      subject: 'Resend Test - Kraftworks',
+      html: `<h1>Test Email</h1><p>If you see this, Resend is working!</p><p>Sent to: ${toEmail}</p>`,
+    };
+    try {
+      const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${c.env.RESEND_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(testEmail),
+      });
+      const body = await res.text();
+      return c.json({ success: res.ok, status: res.status, body: JSON.parse(body) });
+    } catch (err: any) {
+      return c.json({ success: false, error: err.message });
+    }
+  }
+  return c.json({ success: false, error: 'RESEND_API_KEY not configured' });
+});
 
 // Public routes (no auth required)
 app.route('/api/public', publicRoutes);

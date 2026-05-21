@@ -101,6 +101,10 @@ export async function clerkAuth(c: Context<{ Bindings: Env; Variables: { userId:
       await c.env.DB.prepare(
         "INSERT OR IGNORE INTO users (id, email, full_name) VALUES (?, ?, ?)"
       ).bind(claims.sub, claims.email || '', '').run();
+      // Also assign default 'user' role (matches webhook behavior)
+      await c.env.DB.prepare(
+        "INSERT OR IGNORE INTO user_roles (user_id, role) VALUES (?, 'user')"
+      ).bind(claims.sub).run();
     }
   } catch {
     // Non-blocking — don't fail the request if auto-create fails

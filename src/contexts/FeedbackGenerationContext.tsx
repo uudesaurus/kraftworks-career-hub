@@ -185,7 +185,8 @@ export function FeedbackGenerationProvider({ children }: { children: ReactNode }
           });
         }
         isRecoveringRef.current = false;
-      }).catch(() => {
+      }).catch((err: any) => {
+        console.warn('[FeedbackGeneration] Recovery check failed:', err);
         setState({
           ...defaultState,
           error: 'Could not check feedback status. Please try again.',
