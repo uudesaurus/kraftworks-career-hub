@@ -382,6 +382,59 @@ admin.get('/users/lookup', async (c) => {
   return c.json({ user: null, matchType: 'none', partialMatches: partial.results || [] });
 });
 
+// POST /api/admin/users/sync - Sync users from Clerk API
+admin.post('/users/sync', async (c) => {
+  const clerkSecretKey = c.env.CLERK_SECRET_KEY;
+  if (!clerkSecretKey) {
+    return c.json({ error: 'CLERK_SECRET_KEY not configured' }, 500);
+  }
+
+  try {
+    const response = await fetch('https://api.clerk.com/v1/users?limit=100&order_by=-created_at', {
+      headers: { Authorization: `Bearer ${clerkSecretKey}` },
+    });
+
+    if (!response.ok) {
+      return c.json({ error: `Clerk API error: ${response.status}` }, 500);
+    }
+
+    const clerkUsers = await response.json() as any[];
+    let synced = 0;
+
+    for (const clerkUser of clerkUsers) {
+      const userId = clerkUser.id;
+      const email = clerkUser.email_addresses?.[0]?.email_address || `${userId}@placeholder.kraftworks.app`;
+      const fullName = clerkUser.first_name && clerkUser.last_name 
+        ? `${clerkUser.first_name} ${clerkUser.last_name}`
+        : clerkUser.first_name || null;
+
+      const existing = await c.env.DB.prepare('SELECT id FROM users WHERE id = ?').bind(userId).first();
+
+      if (!existing) {
+        await c.env.DB.prepare(
+          'INSERT INTO users (id, email, full_name) VALUES (?, ?, ?)'
+        ).bind(userId, email, fullName).run();
+
+        await c.env.DB.prepare(
+          "INSERT OR IGNORE INTO user_roles (user_id, role) VALUES (?, 'user')"
+        ).bind(userId).run();
+
+        synced++;
+      } else if (email && !email.endsWith('@placeholder.kraftworks.app')) {
+        // Update email/name if changed
+        await c.env.DB.prepare(
+          'UPDATE users SET email = ?, full_name = ? WHERE id = ?'
+        ).bind(email, fullName, userId).run();
+      }
+    }
+
+    return c.json({ synced, total: clerkUsers.length });
+  } catch (err) {
+    console.error('[SYNC USERS ERROR]', err);
+    return c.json({ error: `Sync failed: ${(err as any)?.message}` }, 500);
+  }
+});
+
 // POST /api/admin/roles - Grant admin role
 // Accepts user_id OR email (looks up user_id from email if email is provided)
 admin.post('/roles', async (c) => {
