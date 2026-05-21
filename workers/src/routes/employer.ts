@@ -227,8 +227,8 @@ employer.post('/company', async (c) => {
   return c.json({ company }, 201);
 });
 
-// PUT /api/employer/company - Update company profile
-employer.put('/company', async (c) => {
+// PUT /api/employer/company - Update company profile (requires employer role)
+employer.put('/company', employerGuard, async (c) => {
   const userId = c.get('userId');
   const company = await c.env.DB.prepare(
     'SELECT * FROM companies WHERE user_id = ?'
